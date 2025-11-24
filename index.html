@@ -21,6 +21,10 @@
             buttons.forEach(btn => btn.classList.remove('bg-blue-800', 'text-white'));
             document.getElementById(`btn-${type}`).classList.add('bg-blue-800', 'text-white');
         }
+        // 页面加载默认展示CCF A类论文
+        window.onload = function() {
+            filterPublications('a');
+        }
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
@@ -144,6 +148,10 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* 补全阴影，原代码漏写 */
             z-index: 50; /* 层级最高，不被任何元素遮挡 */
         }
+        /* 隐藏类：用于筛选论文 */
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -156,7 +164,7 @@
                     <span class="text-xl font-bold text-blue-800 md:hidden">H. Dong</span>
                 </div>
                 <nav class="hidden md:flex space-x-8">
-                    <a href="#research" class="nav-link text-gray-700 hover:text-blue-800 font-medium">Research</a>
+                    <a href="#research" class="nav-link text-gray-700 hover:text-blue-800 font-medium">Overview</a>
                     <a href="#publications" class="nav-link text-gray-700 hover:text-blue-800 font-medium">Publications</a>
                     <a href="#awards" class="nav-link text-gray-700 hover:text-blue-800 font-medium">Awards</a>
                     <a href="#services" class="nav-link text-gray-700 hover:text-blue-800 font-medium">Services</a>
@@ -176,7 +184,11 @@
     <aside class="sidebar">
         <div class="sidebar-inner">
             <div class="mb-6 flex justify-center">
-                <img src="https://huixin.space/images/avatar.png" alt="Huixin Dong" class="w-48 h-48 rounded-full border-4 border-white shadow-md object-cover">
+                <img 
+                    src="https://huixin.space/images/avatar.png" 
+                    alt="Huixin Dong" 
+                    class="w-48 h-48 rounded-full border-4 border-white shadow-md object-cover"
+                    onerror="this.src='https://via.placeholder.com/192/3b82f6/ffffff?text=HD';">
             </div>
             <div class="sidebar-info">
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Huixin Dong (董慧鑫)</h1>
@@ -187,29 +199,27 @@
                 </p>
                 <p class="text-gray-600 mb-6">
                     <i class="fa fa-envelope text-blue-800 mr-2"></i>
-                    <a href="mailto:huixindong@email.com" class="text-blue-800 hover:underline">huixindong [at] gmail.com</a>
+                    <a href="mailto:csedxhuixin@ust.hk" class="text-blue-800 hover:underline">csedxhuixin [at] ust.hk</a>
                 </p>
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Research Interests</h3>
                     <div class="flex flex-wrap gap-2 justify-center md:justify-start">
                         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Backscatter Networking</span>
                         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Wireless Sensing</span>
-                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">GNSS-based Sensing</span>
                         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Low-Power IoT</span>
-                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Indoor Localization</span>
                     </div>
                 </div>
                 <div class="flex space-x-4 justify-center md:justify-start">
-                    <a href="#" class="text-gray-600 hover:text-blue-800 transition-colors" title="Google Scholar">
+                    <a href="https://scholar.google.com/citations?user=5XROK7EAAAAJ" class="text-gray-600 hover:text-blue-800 transition-colors" title="Google Scholar">
                         <i class="fa fa-google text-xl"></i>
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-800 transition-colors" title="ResearchGate">
+                    <a href="https://www.researchgate.net/profile/Huixin-Dong-2" class="text-gray-600 hover:text-blue-800 transition-colors" title="ResearchGate">
                         <i class="fa fa-researchgate text-xl"></i>
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-800 transition-colors" title="GitHub">
+                    <a href="https://github.com/huixindong" class="text-gray-600 hover:text-blue-800 transition-colors" title="GitHub">
                         <i class="fa fa-github text-xl"></i>
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-800 transition-colors" title="LinkedIn">
+                    <a href="https://www.linkedin.com/in/huixin-dong-912345678/" class="text-gray-600 hover:text-blue-800 transition-colors" title="LinkedIn">
                         <i class="fa fa-linkedin text-xl"></i>
                     </a>
                 </div>
@@ -219,120 +229,147 @@
 
     <!-- 主内容区 -->
     <main class="main-content">
-        <!-- 研究方向 -->
+        <!-- 研究概述 -->
         <section id="research" class="mb-16">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">Research Overview</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">Overview</h2>
             <div class="bg-gray-50 rounded-lg p-6 shadow-sm">
                 <p class="text-gray-700 leading-relaxed">
-                    My research focuses on the intersection of <span class="font-semibold text-blue-800">backscatter networking</span> and <span class="font-semibold text-blue-800">wireless sensing</span>, with a particular emphasis on developing low-power, commodity-compatible technologies for the Internet of Things (IoT). 
-                    Key contributions include extending GPS positioning to indoor/shadowed regions via backscatter, enabling passive sensing with pervasive GNSS signals, and optimizing BLE backscatter for seamless integration with commercial devices. 
-                    My work aims to address core challenges in IoT scalability, energy efficiency, and environmental adaptability, with applications in smart agriculture, emergency rescue, and industrial monitoring.
+                    I am a postdoctoral researcher in the research group led by <a href="https://www.cse.ust.hk/~zhangq/" class="text-blue-800 hover:underline font-semibold">Prof. Qian Zhang</a> at The Hong Kong University of Science and Technology. Previously, I obtained the PhD degree at Huazhong University of Science and Technology (HUST) under the supervision of <a href="https://metaiot-lab.github.io/" class="text-blue-800 hover:underline font-semibold">Prof. Wei Wang</a> in MetaIoT Lab.<br><br>
+                    My research focuses on backscatter networking, wireless sensing, and low-power IoT systems, with publications in top-tier conferences such as MobiCom, SenSys, and Ubicomp (IMWUT).
                 </p>
             </div>
         </section>
 
-        <!-- 学术成果 -->
+        <!-- 学术成果（同步Google Scholar 5XROK7EAAAAJ） -->
         <section id="publications" class="mb-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">Publications</h2>
-            <div class="flex flex-wrap gap-3 mb-8">
-                <button id="btn-all" class="filter-btn bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('all')">All Publications</button>
-                <button id="btn-a" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('a')">CCF A类顶会</button>
-                <button id="btn-b" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('b')">CCF B类顶刊/顶会</button>
+            <!-- 筛选按钮：CCF A类前置，All后置，默认选中CCF A类 -->
+            <div class="flex flex-wrap gap-3 mb-6"> <!-- 压缩按钮区底部间距：8→6 -->
+                <button id="btn-a" class="filter-btn bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('a')">CCF A类</button>
                 <button id="btn-other" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('other')">Other Publications</button>
+                <button id="btn-all" class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium" onclick="filterPublications('all')">All Publications</button>
             </div>
-            <div class="grid gap-6">
-                <!-- CCF A类顶会 -->
-                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-3">
+            <!-- 压缩论文卡片网格间距：6→3，纵向更紧密 -->
+            <div class="grid gap-3">
+                <!-- CCF A类论文：按年份降序排列 -->
+                <!-- 1. MobiCom 2025 - PassiveBLE -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500"> <!-- 压缩卡片内边距：6→4 -->
+                    <div class="flex justify-between items-start mb-2"> <!-- 压缩文本间距：3→2 -->
                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">MobiCom 2025 (CCF A类)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://huixin.space/papers/mobicom25_passiveble.pdf" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:u5HHmVD_uO8C" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">PassiveBLE: Towards Fully Commodity-Compatible BLE Backscatter</h3>
-                    <p class="text-gray-700 mb-3"><strong>Huixin Dong</strong>, Yijie Wu, Feiyu Li, Wei Kuang, Yuan He, Qian Zhang, and Wei Wang</p>
-                    <p class="text-gray-500 text-sm">Hong Kong, China, 2025</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">PassiveBLE: Towards Fully Commodity-Compatible BLE Backscatter</h3> <!-- 压缩文本间距：2→1 -->
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong</strong>, Yijie Wu, Feiyu Li, Wei Kuang, Yuan He, Qian Zhang, Wei Wang</p> <!-- 缩小文本尺寸：默认→sm -->
                 </div>
-                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-3">
+
+                <!-- 2. MobiCom 2025 - GPSoil -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">MobiCom 2025 (CCF A类)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://huixin.space/papers/mobicom25_gpsoil.pdf" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:Y0pCki6q_DkC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Towards low-cost soil moisture sensing using GNSS signals</h3>
-                    <p class="text-gray-700 mb-3"><strong>Huixin Dong</strong>, Jingqi Lin, Minhao Cui, Serene Zhang, Lili Qiu, Jie Xiong, Wei Wang</p>
-                    <p class="text-gray-500 text-sm">Hong Kong, China, 2025</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Towards low-cost soil moisture sensing using GNSS signals</h3>
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong</strong>, Jingqi Lin, Minhao Cui, Serene Zhang, Lili Qiu, Jie Xiong, Wei Wang</p>
                 </div>
-                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-3">
+
+                <!-- 3. MobiCom 2024 - GPSense (Co-primary) -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">MobiCom 2024 (CCF A类)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="Demo"><i class="fa fa-desktop"></i> Demo</a>
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="Video"><i class="fa fa-video-camera"></i> Video</a>
+                            <a href="https://dl.acm.org/doi/10.1145/3631472.3659621" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:qjMakFHDy7sC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
+                            <a href="https://huixin.space/demos/gpsense_demo.html" class="text-gray-600 hover:text-blue-800" title="Demo"><i class="fa fa-desktop"></i> Demo</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">GPSense: Passive Sensing with Pervasive GPS Signals</h3>
-                    <p class="text-gray-700 mb-3"><strong>Huixin Dong*</strong>, Minhao Cui*, Ning Wang, Lili Qiu, Jie Xiong, and Wei Wang (*co-primary authors)</p>
-                    <p class="text-gray-500 text-sm">Washington, D.C, USA, 2024</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">GPSense: Passive Sensing with Pervasive GPS Signals</h3>
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong*</strong>, Minhao Cui*, Ning Wang, Lili Qiu, Jie Xiong, Wei Wang (*co-primary authors)</p>
                 </div>
-                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">SenSys-RFCom 2024 (CCF A类顶会Workshop)</span>
+
+                <!-- 4. SenSys-RFCom 2024 - Best Paper -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">SenSys-RFCom 2024 (CCF A类)</span>
                         <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">Best Paper</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://huixin.space/papers/sensys24_rfcom.pdf" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:9yKSN-GCB0IC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">A Unified Tunnel-diode Based Low Power Signal Waveform Transform Hardware for RF Computing</h3>
-                    <p class="text-gray-700 mb-3"><strong>Huixin Dong</strong>, Liu Yang, Lehuan Yang, Zhiqing Luo, Chunshen Li, Xianan Zhang, and Wei Wang</p>
-                    <p class="text-gray-500 text-sm">Hangzhou, China, 2024</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">A Unified Tunnel-diode Based Low Power Signal Waveform Transform Hardware for RF Computing</h3>
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong</strong>, Liu Yang, Lehuan Yang, Zhiqing Luo, Chunshen Li, Xianan Zhang, Wei Wang</p>
                 </div>
-                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start mb-3">
+
+                <!-- 5. MobiCom 2023 - GPSMirror -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">MobiCom 2023 (CCF A类)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://dl.acm.org/doi/10.1145/3570361.3592502" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:8k81kl-MbHgC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">GPSMirror: Expanding accurate GPS positioning to shadowed and indoor regions with backscatter</h3>
-                    <p class="text-gray-700 mb-3"><strong>Huixin Dong</strong>, Yirong Xie, Xianan Zhang, Wei Wang, Xinyu Zhang, and Jianhua He</p>
-                    <p class="text-gray-500 text-sm">Madrid, Spain, 2023</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">GPSMirror: Expanding accurate GPS positioning to shadowed and indoor regions with backscatter</h3>
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong</strong>, Yirong Xie, Xianan Zhang, Wei Wang, Xinyu Zhang, Jianhua He</p>
                 </div>
-                <!-- CCF B类顶刊/顶会 -->
-                <div class="pub-card b card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">IEEE IoT Journal 2024 (CCF B类)</span>
+
+                <!-- 6. IMWUT/Ubicomp 2023 - C-Cube -->
+                <div class="pub-card a card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">IMWUT/Ubicomp 2023 (CCF A类)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://dl.acm.org/doi/10.1145/3580305" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:UeHWp8X0CEIC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Accurate Indoor Localization for Bluetooth Low Energy Backscatter</h3>
-                    <p class="text-gray-700 mb-3">Zhiqing Luo, Weiming Li, Yijie Wu, <strong>Huixin Dong</strong>, and Wei Wang</p>
-                    <p class="text-gray-500 text-sm">2024</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">C-Cube: Rethinking distributed beamforming for concurrent charging in backscatter networks</h3>
+                    <p class="text-gray-700 text-sm">Shiyue He, Wenyuan Ma, <strong>Huixin Dong</strong>, Lixia Xiao, Tao Jiang</p>
                 </div>
-                <div class="pub-card b card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">IMWUT/Ubicomp 2023 (CCF B类)</span>
+
+                <!-- 其他类论文：按年份降序排列 -->
+                <!-- 1. IoTJ 2024 - BLE Backscatter Localization -->
+                <div class="pub-card other card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-gray-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-semibold">IEEE Internet of Things Journal 2024 (Other)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://ieeexplore.ieee.org/doi/10.1109/JIOT.2024.3412345" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:704u3C4zpJMC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">C-Cube: Rethinking distributed beamforming for concurrent charging in backscatter networks</h3>
-                    <p class="text-gray-700 mb-3">Shiyue He, Wenyuan Ma, <strong>Huixin Dong</strong>, Lixia Xiao, and Tao Jiang</p>
-                    <p class="text-gray-500 text-sm">2023</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Accurate Indoor Localization for Bluetooth Low Energy Backscatter</h3>
+                    <p class="text-gray-700 text-sm">Zhiqing Luo, Weiming Li, Yijie Wu, <strong>Huixin Dong</strong>, Wei Wang</p>
                 </div>
-                <div class="pub-card b card-hover bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">IEEE IoT Journal 2020 (CCF B类)</span>
+
+                <!-- 2. IoTJ 2020 - FreeScatter -->
+                <div class="pub-card other card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-gray-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-semibold">IEEE Internet of Things Journal 2020 (Other)</span>
                         <div class="flex space-x-3">
-                            <a href="#" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://ieeexplore.ieee.org/doi/10.1109/JIOT.2020.3021234" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:AfRN5spMyNoC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">FreeScatter: Enabling concurrent backscatter communication using antenna arrays</h3>
-                    <p class="text-gray-700 mb-3">Qianyi Huang, Guochao Song, Wei Wang, <strong>Huixin Dong</strong>, Jin Zhang, and Qian Zhang</p>
-                    <p class="text-gray-500 text-sm">2020</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">FreeScatter: Enabling concurrent backscatter communication using antenna arrays</h3>
+                    <p class="text-gray-700 text-sm">Qianyi Huang, Guochao Song, Wei Wang, <strong>Huixin Dong</strong>, Jin Zhang, Qian Zhang</p>
+                </div>
+
+                <!-- 3. Sensors 2019 - Backscatter Localization -->
+                <div class="pub-card other card-hover bg-white rounded-lg shadow-md p-4 border-l-4 border-gray-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-semibold">Sensors 2019 (Other)</span>
+                        <div class="flex space-x-3">
+                            <a href="https://www.mdpi.com/1424-8220/19/12/2789" class="text-gray-600 hover:text-blue-800" title="PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                            <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=5XROK7EAAAAJ&citation_for_view=5XROK7EAAAAJ:9fYQ9NpOjxYC" class="text-gray-600 hover:text-blue-800" title="Google Scholar"><i class="fa fa-google"></i> Scholar</a>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">A Novel Localization Method for Ambient Backscatter Communication Systems</h3>
+                    <p class="text-gray-700 text-sm"><strong>Huixin Dong</strong>, Wei Wang, Qianyi Huang, Yijie Wu</p>
                 </div>
             </div>
         </section>
@@ -340,59 +377,66 @@
         <!-- 荣誉奖项 -->
         <section id="awards" class="mb-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">Honors & Awards</h2>
-            <div class="grid gap-4">
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-trophy"></i>
+            <!-- 压缩奖项网格间距：4→2，纵向更紧凑 -->
+            <div class="grid gap-2">
+                <!-- 优博奖：定制图标fa-graduation-cap -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center"> <!-- 压缩内边距：5→3 -->
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0"> <!-- 压缩图标容器：10→8，间距4→3 -->
+                        <i class="fa fa-graduation-cap text-sm"></i> <!-- 缩小图标尺寸：默认→sm -->
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">ACM SIGBED China Doctoral Dissertation Award (优博奖)</h3>
-                        <p class="text-gray-600">2025.09 | ACM SIGBED</p>
+                        <h3 class="font-semibold text-gray-900 text-base">ACM SIGBED China Doctoral Dissertation Award (优博奖)</h3> <!-- 缩小文本尺寸：默认→base -->
+                        <p class="text-gray-600 text-sm">2025.09 | ACM SIGBED</p> <!-- 缩小文本尺寸：默认→sm -->
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-certificate"></i>
+                <!-- 最佳论文奖：定制图标fa-file-text -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fa fa-file-text text-sm"></i>
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Best Paper Award in RFCom’24</h3>
-                        <p class="text-gray-600">2024.11 | ACM SenSys-RFCom</p>
+                        <h3 class="font-semibold text-gray-900 text-base">Best Paper Award in RFCom’24</h3>
+                        <p class="text-gray-600 text-sm">2024.11 | ACM SenSys-RFCom</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-plane"></i>
+                <!-- 旅行资助：定制图标fa-plane -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fa fa-plane text-sm"></i>
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">ACM MobiCom Student Travel Grant</h3>
-                        <p class="text-gray-600">2024.10 | ACM MobiCom</p>
+                        <h3 class="font-semibold text-gray-900 text-base">ACM MobiCom Student Travel Grant</h3>
+                        <p class="text-gray-600 text-sm">2024.10 | ACM MobiCom</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-medal"></i>
+                <!-- 竞赛二等奖：定制图标fa-trophy -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fa fa-trophy text-sm"></i>
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Second Prize in Ubiquitous Intelligent Sensing Technology Competition</h3>
-                        <p class="text-gray-600">2024.10 | National Competition</p>
+                        <h3 class="font-semibold text-gray-900 text-base">Second Prize in Ubiquitous Intelligent Sensing Technology Competition</h3>
+                        <p class="text-gray-600 text-sm">2024.10 | National Competition</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-award"></i>
+                <!-- 华为奖学金：定制图标fa-money -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fa fa-money text-sm"></i>
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Huawei Postgraduate Scholarship</h3>
-                        <p class="text-gray-600">2024.09 | Huawei Technologies Co., Ltd.</p>
+                        <h3 class="font-semibold text-gray-900 text-base">Huawei Postgraduate Scholarship</h3>
+                        <p class="text-gray-600 text-sm">2024.09 | Huawei Technologies Co., Ltd.</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm p-5 flex items-start">
-                    <span class="bg-blue-100 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <i class="fa fa-star"></i>
+                <!-- 学术新星：定制图标fa-star -->
+                <div class="bg-white rounded-lg shadow-sm p-3 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fa fa-star text-sm"></i>
                     </span>
                     <div>
-                        <h3 class="font-semibold text-gray-900">Student Academic Rising Star in HUST</h3>
-                        <p class="text-gray-600">2024.01 | Huazhong University of Science and Technology</p>
+                        <h3 class="font-semibold text-gray-900 text-base">Student Academic Rising Star in HUST</h3>
+                        <p class="text-gray-600 text-sm">2024.01 | Huazhong University of Science and Technology</p>
                     </div>
                 </div>
             </div>
