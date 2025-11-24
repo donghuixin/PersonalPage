@@ -66,7 +66,7 @@
             background-color: #FFFFFF;
             color: #374151;
             padding-top: 3rem; /* 压缩顶部内边距 */
-            line-height: 1.3; /* 减小全局行高 */
+            line-height: 1.4; /* 轻微增大行高，提升可读性 */
             margin: 0;
         }
         
@@ -126,6 +126,8 @@
             .sidebar-info { text-align: center; }
             .pub-grid, .award-grid, .service-grid { grid-template-columns: 1fr !important; }
             .main-content { padding: 1rem 0.8rem; }
+            /* 移动端文字适当缩小，保证排版 */
+            .service-item, .talk-item, .exp-item { font-size: 0.75rem !important; }
         }
 
         /* 卡片交互 - 保留逻辑 */
@@ -399,117 +401,118 @@
             </div>
         </section>
 
+        <!-- 优化：Academic Services 板块 -->
         <section id="services" class="mb-6 scroll-mt-20">
             <h2 class="text-xl font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200 flex items-center">
                 <i class="fa fa-gavel mr-2 text-blue-800"></i>Academic Services
             </h2>
             <div class="service-grid">
-                <!-- 修改：将列表文字从text-[9px]改为text-xs，提升字号 -->
-                <div class="bg-gray-50 rounded-xl p-2 border border-gray-100 h-full">
-                    <h3 class="font-bold text-gray-900 mb-2 text-xs flex items-center"><i class="fa fa-users mr-1 text-blue-700"></i>Committee Member</h3>
-                    <ul class="space-y-1 text-xs text-gray-700">
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1 text-xs"></i><span>Artifact Evaluation, <strong>MobiCom 2025</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1 text-xs"></i><span>Artifact Evaluation, <strong>MobiSys 2025</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1 text-xs"></i><span>Artifact Evaluation, <strong>SenSys 2024</strong></span></li>
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-100 h-full">
+                    <h3 class="font-bold text-gray-900 mb-2 text-sm flex items-center service-item"><i class="fa fa-users mr-1.5 text-blue-700"></i>Committee Member</h3>
+                    <ul class="space-y-1.5 text-sm text-gray-700 service-item">
+                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1.5 text-xs"></i><span>Artifact Evaluation, <strong>MobiCom 2025</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1.5 text-xs"></i><span>Artifact Evaluation, <strong>MobiSys 2025</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-1.5 text-xs"></i><span>Artifact Evaluation, <strong>SenSys 2024</strong></span></li>
                     </ul>
                 </div>
-                <div class="bg-gray-50 rounded-xl p-2 border border-gray-100 h-full">
-                    <h3 class="font-bold text-gray-900 mb-2 text-xs flex items-center"><i class="fa fa-book mr-1 text-blue-700"></i>Journal Reviewer</h3>
-                    <ul class="space-y-1 text-xs text-gray-700">
-                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1 text-xs"></i><span>ACM IMWUT</span></li>
-                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1 text-xs"></i><span>IEEE/ACM ToN</span></li>
-                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1 text-xs"></i><span>IEEE TMC</span></li>
-                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1 text-xs"></i><span>IEEE IoT-J</span></li>
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-100 h-full">
+                    <h3 class="font-bold text-gray-900 mb-2 text-sm flex items-center service-item"><i class="fa fa-book mr-1.5 text-blue-700"></i>Journal Reviewer</h3>
+                    <ul class="space-y-1.5 text-sm text-gray-700 service-item">
+                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1.5 text-xs"></i><span>ACM IMWUT</span></li>
+                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1.5 text-xs"></i><span>IEEE/ACM ToN</span></li>
+                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1.5 text-xs"></i><span>IEEE TMC</span></li>
+                        <li class="flex items-start"><i class="fa fa-angle-right text-gray-400 mt-0.5 mr-1.5 text-xs"></i><span>IEEE IoT-J</span></li>
                     </ul>
                 </div>
             </div>
         </section>
 
+        <!-- 优化：Talks 板块 -->
         <section id="talks" class="mb-6 scroll-mt-20">
             <h2 class="text-xl font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200 flex items-center">
                 <i class="fa fa-microphone mr-2 text-blue-800"></i>Talks
             </h2>
-            <div class="relative border-l-2 border-gray-200 ml-2 space-y-4 max-w-4xl"> <!-- 压缩时间轴间距 -->
-                <div class="ml-6 relative">
-                    <span class="absolute -left-8 top-0.5 bg-blue-800 w-3 h-3 rounded-full border-2 border-white shadow-sm"></span> <!-- 压缩圆点尺寸 -->
-                    <h3 class="font-bold text-gray-900 text-xs">MobiCom 2025 Conference Presentation</h3>
-                    <p class="text-[9px] text-gray-500 mb-0.5">2025.11 | Hong Kong, China</p>
-                    <p class="text-gray-600 text-[9px]">Presented "PassiveBLE" and "GPSoil".</p>
+            <div class="relative border-l-2 border-gray-200 ml-3 space-y-5 max-w-4xl"> <!-- 增大左侧间距和项间距 -->
+                <div class="ml-7 relative talk-item">
+                    <span class="absolute -left-9 top-0.5 bg-blue-800 w-4 h-4 rounded-full border-2 border-white shadow-sm"></span> <!-- 增大圆点尺寸 -->
+                    <h3 class="font-bold text-gray-900 text-sm">MobiCom 2025 Conference Presentation</h3>
+                    <p class="text-xs text-gray-500 mb-1">2025.11 | Hong Kong, China</p>
+                    <p class="text-gray-600 text-sm">Presented "PassiveBLE" and "GPSoil".</p>
                 </div>
-                <div class="ml-6 relative">
-                    <span class="absolute -left-8 top-0.5 bg-gray-300 w-3 h-3 rounded-full border-2 border-white"></span>
-                    <h3 class="font-bold text-gray-900 text-xs">MobiCom 2024 Conference Presentation</h3>
-                    <p class="text-[9px] text-gray-500 mb-0.5">2024.11 | Washington, D.C, USA</p>
-                    <p class="text-gray-600 text-[9px]">Presented "GPSense" to the community.</p>
+                <div class="ml-7 relative talk-item">
+                    <span class="absolute -left-9 top-0.5 bg-gray-300 w-4 h-4 rounded-full border-2 border-white"></span>
+                    <h3 class="font-bold text-gray-900 text-sm">MobiCom 2024 Conference Presentation</h3>
+                    <p class="text-xs text-gray-500 mb-1">2024.11 | Washington, D.C, USA</p>
+                    <p class="text-gray-600 text-sm">Presented "GPSense" to the community.</p>
                 </div>
-                <div class="ml-6 relative">
-                    <span class="absolute -left-8 top-0.5 bg-gray-300 w-3 h-3 rounded-full border-2 border-white"></span>
-                    <h3 class="font-bold text-gray-900 text-xs">SenSys Workshop 2024</h3>
-                    <p class="text-[9px] text-gray-500 mb-0.5">2024.11 | Hangzhou, China</p>
-                    <p class="text-gray-600 text-[9px]">Presented "TuniScatter" at RFCom.</p>
+                <div class="ml-7 relative talk-item">
+                    <span class="absolute -left-9 top-0.5 bg-gray-300 w-4 h-4 rounded-full border-2 border-white"></span>
+                    <h3 class="font-bold text-gray-900 text-sm">SenSys Workshop 2024</h3>
+                    <p class="text-xs text-gray-500 mb-1">2024.11 | Hangzhou, China</p>
+                    <p class="text-gray-600 text-sm">Presented "TuniScatter" at RFCom.</p>
                 </div>
             </div>
         </section>
 
-        <!-- 新增：独立的Experience板块（工作经历） -->
+        <!-- 优化：Experience 板块 -->
         <section id="experience" class="mb-6 scroll-mt-20">
              <h2 class="text-xl font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200 flex items-center">
                 <i class="fa fa-briefcase mr-2 text-blue-800"></i>Experience
             </h2>
-            <div class="space-y-2">
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2025.08 - Present</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">Postdoctoral Researcher</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">The Hong Kong University of Science and Technology (HKUST)</p>
-                        <p class="text-[9px] text-gray-500 mt-0.5">Supervisor: Prof. Qian Zhang</p>
+            <div class="space-y-3"> <!-- 增大项间距 -->
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2025.08 - Present</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100"> <!-- 增大卡片内边距 -->
+                        <h3 class="text-sm font-bold text-gray-900">Postdoctoral Researcher</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">The Hong Kong University of Science and Technology (HKUST)</p>
+                        <p class="text-xs text-gray-500 mt-1">Supervisor: Prof. Qian Zhang</p>
                     </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2025.03 - 2025.08</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">Research Assistant</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">Wuhan University</p>
-                        <p class="text-[9px] text-gray-500 mt-0.5">Advisor: Prof. Wei Wang</p>
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2025.03 - 2025.08</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-900">Research Assistant</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">Wuhan University</p>
+                        <p class="text-xs text-gray-500 mt-1">Advisor: Prof. Wei Wang</p>
                     </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2020.05 - 2020.08</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">Research Intern</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">Peng Cheng Laboratory</p>
-                        <p class="text-[9px] text-gray-500 mt-0.5">Mentor: Qianyi Huang</p>
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2020.05 - 2020.08</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-900">Research Intern</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">Peng Cheng Laboratory</p>
+                        <p class="text-xs text-gray-500 mt-1">Mentor: Qianyi Huang</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 新增：独立的Education板块（教育背景） -->
+        <!-- 优化：Education 板块 -->
         <section id="education" class="mb-8 scroll-mt-20">
              <h2 class="text-xl font-bold text-gray-900 mb-3 pb-1 border-b border-gray-200 flex items-center">
                 <i class="fa fa-graduation-cap mr-2 text-blue-800"></i>Education
             </h2>
-            <div class="space-y-2">
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2020.09 - 2025.06</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">Ph.D. in Information and Communication Engineering</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">Huazhong University of Science and Technology (HUST)</p>
-                        <p class="text-[9px] text-gray-500 mt-0.5">Supervisor: Prof. Wei Wang | MetaIoT Lab</p>
+            <div class="space-y-3"> <!-- 增大项间距 -->
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2020.09 - 2025.06</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100"> <!-- 增大卡片内边距 -->
+                        <h3 class="text-sm font-bold text-gray-900">Ph.D. in Information and Communication Engineering</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">Huazhong University of Science and Technology (HUST)</p>
+                        <p class="text-xs text-gray-500 mt-1">Supervisor: Prof. Wei Wang | MetaIoT Lab</p>
                     </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2018.09 - 2020.06</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">M.S. in Information and Communication Engineering</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">Huazhong University of Science and Technology (HUST)</p>
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2018.09 - 2020.06</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-900">M.S. in Information and Communication Engineering</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">Huazhong University of Science and Technology (HUST)</p>
                     </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-xs font-mono">2014.09 - 2018.06</span></div>
-                    <div class="md:w-3/4 bg-white rounded-lg p-2 shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-900">B.E. in Communication Engineering</h3>
-                        <p class="text-blue-800 font-medium text-[9px] mt-0.5">Wuhan University of Technology</p>
+                <div class="flex flex-col md:flex-row gap-3 exp-item">
+                    <div class="md:w-1/4 pt-0.5"><span class="font-bold text-gray-700 text-sm font-mono">2014.09 - 2018.06</span></div>
+                    <div class="md:w-3/4 bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-900">B.E. in Communication Engineering</h3>
+                        <p class="text-blue-800 font-medium text-xs mt-1">Wuhan University of Technology</p>
                     </div>
                 </div>
             </div>
@@ -518,14 +521,14 @@
     </main>
 
     <footer class="main-content border-t border-gray-200 py-3 mt-4 bg-white"> <!-- 压缩页脚间距 -->
-        <div class="flex flex-col md:flex-row justify-between items-center text-[9px] text-gray-400">
+        <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-400"> <!-- 页脚文字也适当放大 -->
             <p>© 2025 Huixin Dong. All rights reserved.</p>
             <div class="mt-1 md:mt-0">Last updated: Nov. 24, 2025</div>
         </div>
     </footer>
 
-    <button id="backToTop" class="fixed bottom-4 right-4 bg-blue-800 text-white w-8 h-8 rounded-full shadow-lg hidden items-center justify-center hover:bg-blue-700 transition z-50" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"> <!-- 压缩回到顶部按钮 -->
-        <i class="fa fa-arrow-up text-xs"></i>
+    <button id="backToTop" class="fixed bottom-4 right-4 bg-blue-800 text-white w-9 h-9 rounded-full shadow-lg hidden items-center justify-center hover:bg-blue-700 transition z-50" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"> <!-- 增大按钮尺寸 -->
+        <i class="fa fa-arrow-up text-sm"></i>
     </button>
     
     <script>
