@@ -7,9 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -67,182 +64,6 @@
                 this.onerror = null; 
                 this.src = fallbackAvatar; 
             });
-            initEarth(); 
-            updateTime();
-            updateVisitorStats();
-            setInterval(updateTime, 1000);
-        }
-
-        // --- 5. 时间/统计更新 ---
-        function updateTime() {
-            const now = new Date();
-            // 模拟访客位于美国西海岸 (UTC-8)
-            const visitorTime = new Date(now.getTime() - 8 * 60 * 60 * 1000); 
-            const timeString = visitorTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            const el = document.getElementById('visitor-time-content');
-            if(el) el.innerHTML = `${timeString} (Visitor Local)`;
-        }
-
-        function updateVisitorStats() {
-            document.getElementById('visitor-ip-country').textContent = "United States";
-            let count = 12845;
-            document.getElementById('visitor-count').textContent = count.toLocaleString();
-        }
-
-        // --- 6. 3D 地球逻辑 (Shader 增强版) ---
-        let camera, scene, renderer;
-
-        function initEarth() {
-            const container = document.getElementById('earth-container');
-            if (!container) return;
-
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            scene = new THREE.Scene();
-            
-            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-            camera.position.z = 3.2; 
-            camera.position.y = 0.5;
-
-            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-
-            const group = new THREE.Group();
-            scene.add(group);
-
-            const textureLoader = new THREE.TextureLoader();
-            const dayTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
-            const nightTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_night_2048.jpg');
-            const normalMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg');
-            const specularMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg');
-
-            const earthMaterial = new THREE.ShaderMaterial({
-                uniforms: {
-                    sunDirection: { value: new THREE.Vector3(1, 0, 0) },
-                    dayTexture: { value: dayTexture },
-                    nightTexture: { value: nightTexture },
-                    normalMap: { value: normalMap },
-                    specularMap: { value: specularMap }
-                },
-                vertexShader: `
-                    varying vec2 vUv;
-                    varying vec3 vNormal;
-                    varying vec3 vPosition;
-                    void main() {
-                        vUv = uv;
-                        vNormal = normalize(mat3(modelMatrix) * normal);
-                        vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    uniform vec3 sunDirection;
-                    uniform sampler2D dayTexture;
-                    uniform sampler2D nightTexture;
-                    uniform sampler2D normalMap;
-                    uniform sampler2D specularMap;
-                    varying vec2 vUv;
-                    varying vec3 vNormal;
-                    varying vec3 vPosition;
-
-                    void main() {
-                        vec3 normal = normalize(vNormal);
-                        float lightIntensity = dot(normal, normalize(sunDirection));
-                        float dayMix = smoothstep(-0.25, 0.25, lightIntensity);
-
-                        vec4 dayColor = texture2D(dayTexture, vUv);
-                        vec4 nightColor = texture2D(nightTexture, vUv);
-                        float specularData = texture2D(specularMap, vUv).r;
-
-                        // 增强海岸线
-                        dayColor.rgb = mix(dayColor.rgb, dayColor.rgb * 0.5, specularData); 
-                        dayColor.rgb *= 1.4; 
-
-                        // 增强夜景灯光
-                        vec3 finalNightColor = pow(nightColor.rgb, vec3(0.7)) * 2.8;
-
-                        vec3 finalColor = mix(finalNightColor, dayColor.rgb, dayMix);
-
-                        if (dayMix > 0.5 && specularData > 0.3) {
-                            vec3 reflection = reflect(-normalize(sunDirection), normal);
-                            float specular = pow(max(0.0, dot(reflection, normalize(-vPosition))), 25.0);
-                            finalColor += vec3(0.6) * specular * specularData * dayMix;
-                        }
-
-                        gl_FragColor = vec4(finalColor, 1.0);
-                    }
-                `
-            });
-
-            const geometry = new THREE.SphereGeometry(1, 64, 64);
-            const earth = new THREE.Mesh(geometry, earthMaterial);
-            group.add(earth);
-
-            const now = new Date();
-            const utcHours = now.getUTCHours();
-            const utcMinutes = now.getUTCMinutes();
-            const sunOffsetAngle = ((utcHours + utcMinutes / 60) - 12) * 15 * (Math.PI / 180);
-            const sunPosition = new THREE.Vector3(Math.sin(sunOffsetAngle), 0.3, Math.cos(sunOffsetAngle)).normalize();
-            earthMaterial.uniforms.sunDirection.value.copy(sunPosition);
-
-            const lat = 34.05, lon = -118.24;
-            const phi = (90 - lat) * (Math.PI / 180);
-            const theta = (lon + 180) * (Math.PI / 180); 
-            const r = 1.015; 
-            const x = -(r * Math.sin(phi) * Math.cos(theta));
-            const z = (r * Math.sin(phi) * Math.sin(theta));
-            const y = (r * Math.cos(phi));
-
-            const dotGeometry = new THREE.SphereGeometry(0.02, 16, 16);
-            const dotMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const dot = new THREE.Mesh(dotGeometry, dotMaterial);
-            dot.position.set(x, y, z);
-            
-            const ringGeometry = new THREE.RingGeometry(0.025, 0.045, 32);
-            const ringMaterial = new THREE.MeshBasicMaterial({ 
-                color: 0x00ff00, transparent: true, opacity: 0.8, side: THREE.DoubleSide 
-            });
-            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-            ring.position.set(x, y, z);
-            ring.lookAt(0, 0, 0); 
-            
-            group.add(dot);
-            group.add(ring);
-
-            group.rotation.y = -theta - Math.PI/2.5; 
-            group.rotation.x = 0.2;
-
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.enableZoom = false;
-            controls.autoRotate = false; 
-
-            let pulseTime = 0;
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-                pulseTime += 0.04;
-                const scale = 1 + Math.sin(pulseTime) * 0.4;
-                ring.scale.set(scale, scale, 1);
-                ring.material.opacity = 0.7 - Math.sin(pulseTime) * 0.3;
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            const resizeObserver = new ResizeObserver(() => {
-                if (container && camera && renderer) {
-                    const newWidth = container.clientWidth;
-                    const newHeight = container.clientHeight;
-                    renderer.setSize(newWidth, newHeight);
-                    camera.aspect = newWidth / newHeight;
-                    camera.updateProjectionMatrix();
-                }
-            });
-            resizeObserver.observe(container);
         }
     </script>
 
@@ -281,13 +102,6 @@
                 -webkit-backdrop-filter: blur(30px);
                 border: 1px solid rgba(255, 255, 255, 0.3);
                 box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-            }
-
-            .glass-widget {
-                background-image: linear-gradient(to right, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.15));
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
             }
 
             .glass-btn-inactive {
@@ -338,7 +152,7 @@
         }
         .nav-link:hover::after { width: 100%; }
 
-        /* --- 侧边栏布局 (Flex Column & Responsive) --- */
+        /* --- 侧边栏布局 --- */
         .sidebar {
             position: fixed; 
             top: 5rem; 
@@ -365,56 +179,6 @@
             margin-bottom: 1rem;
         }
         .sidebar-info { width: 100%; }
-
-        /* --- 3D 地球自适应容器 --- */
-        #earth-wrapper {
-            width: 100%;
-            flex: 1 1 auto; 
-            min-height: 220px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end; 
-            position: relative;
-            z-index: 10;
-            gap: 0.5rem; 
-            margin-top: auto;
-        }
-
-        #earth-container {
-            width: 100%;
-            flex: 1 1 100%; 
-            min-height: 180px; 
-            max-height: 280px;
-            cursor: grab;
-            position: relative;
-        }
-        #earth-container:active { cursor: grabbing; }
-
-        .visitor-header {
-            width: 100%;
-            flex: 0 0 auto;
-            padding: 8px 12px;
-            border-radius: 16px;
-            font-size: 0.8rem;
-            color: #4b5563;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .visitor-footer {
-            width: 100%;
-            flex: 0 0 auto;
-            padding: 10px 16px;
-            border-radius: 16px;
-            font-size: 0.8rem;
-            color: #4b5563;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
 
         .main-content {
             margin-left: clamp(320px, 22vw, 400px);
@@ -446,7 +210,6 @@
             }
             .sidebar-info { text-align: left; flex: 1; }
             .sidebar-avatar { margin-bottom: 0 !important; }
-            #earth-wrapper { display: none; }
         }
         @media (max-width: 640px) {
             .sidebar-inner { flex-direction: column; text-align: center; gap: clamp(1rem, 2vw, 1.5rem); }
@@ -568,32 +331,6 @@
                     <a href="https://github.com/donghuixin" class="text-gray-400 hover:text-black transition transform hover:scale-110" title="GitHub"><i class="fa fa-github text-xl"></i></a>
                     <a href="https://es.linkedin.com/in/huixin-dong-80220a294" class="text-gray-400 hover:text-blue-600 transition transform hover:scale-110" title="LinkedIn"><i class="fa fa-linkedin text-xl"></i></a>
                     <a href="https://www.researchgate.net/scientific-contributions/Huixin-Dong-2299262092" class="text-gray-400 hover:text-green-600 transition transform hover:scale-110" title="ResearchGate"><span class="font-bold font-serif text-lg leading-none" style="position:relative; top:1px;">R<span style="font-size:0.8em">G</span></span></a>
-                </div>
-            </div>
-        </div>
-        
-        <div id="earth-wrapper">
-            <div id="visitor-time" class="visitor-header glass-widget">
-                <i class="fa fa-clock-o mr-2 text-blue-600"></i>
-                <span id="visitor-time-content">Loading time...</span>
-            </div>
-            
-            <div id="earth-container" title="Drag to rotate Earth"></div>
-            
-            <div id="visitor-stats" class="visitor-footer glass-widget">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <i class="fa fa-globe mr-2 text-blue-600 w-4 text-center"></i>
-                        <span class="mr-1 text-gray-600">Location:</span>
-                    </div>
-                    <span class="font-semibold text-blue-900" id="visitor-ip-country">Loading...</span>
-                </div>
-                 <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <i class="fa fa-users mr-2 text-blue-600 w-4 text-center"></i>
-                        <span class="mr-1 text-gray-600">Visitors:</span>
-                    </div>
-                    <span class="font-semibold text-blue-900" id="visitor-count">Loading...</span>
                 </div>
             </div>
         </div>
@@ -826,7 +563,7 @@
                         </li>
                         <li class="journal-item flex items-start" onclick="toggleJournal(this)">
                             <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>ACM ToN</span>
+                            <span>IEEE/ACM ToN</span>
                             <div class="year-list hidden">2024, 2025</div>
                         </li>
                         <li class="journal-item flex items-start" onclick="toggleJournal(this)">
