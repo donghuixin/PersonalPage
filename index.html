@@ -7,6 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
+    <!-- 1. 引入 Viewer.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.css" rel="stylesheet">
+    <!-- 2. 引入 Viewer.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -32,8 +37,10 @@
                 btn.classList.add('glass-btn-inactive', 'text-gray-700');
             });
             const activeBtn = document.getElementById(`btn-${type}`);
-            activeBtn.classList.remove('glass-btn-inactive', 'text-gray-700');
-            activeBtn.classList.add('bg-blue-800', 'text-white', 'shadow-md');
+            if(activeBtn) {
+                activeBtn.classList.remove('glass-btn-inactive', 'text-gray-700');
+                activeBtn.classList.add('bg-blue-800', 'text-white', 'shadow-md');
+            }
         }
 
         // --- 2. 移动端菜单 ---
@@ -60,10 +67,78 @@
         window.onload = function() {
             filterPublications('a');
             const avatarImg = document.getElementById('avatar-img');
-            avatarImg.addEventListener('error', function() {
-                this.onerror = null; 
-                this.src = fallbackAvatar; 
-            });
+            if(avatarImg) {
+                avatarImg.addEventListener('error', function() {
+                    this.onerror = null; 
+                    this.src = fallbackAvatar; 
+                });
+            }
+            // 初始化漫画查看器
+            initComicViewer();
+        }
+
+        // --- 5. 漫画查看器逻辑 ---
+        function initComicViewer() {
+            const setupViewer = (triggerId, imageId) => {
+                const showComicArea = document.getElementById(triggerId);
+                const comicImage = document.getElementById(imageId);
+                let comicViewerInstance;
+
+                if (!showComicArea || !comicImage) return;
+
+                const openViewer = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (!comicViewerInstance) {
+                        comicViewerInstance = new Viewer(comicImage, {
+                            inline: false,
+                            button: true,
+                            navbar: false,
+                            title: false,
+                            toolbar: {
+                                zoomIn: 1, zoomOut: 1, oneToOne: 1, reset: 1,
+                                rotateLeft: 1, rotateRight: 1, flipHorizontal: 1, flipVertical: 1,
+                            },
+                            tooltip: true, movable: true, zoomable: true, rotatable: true, scalable: true,
+                            transition: true, fullscreen: true, keyboard: true,
+                            backdrop: true,
+                            
+                            viewed: function() {
+                                setTimeout(() => {
+                                    const v = comicViewerInstance;
+                                    if (!v) return;
+                                    v.zoomTo(0.4); // 缩放至 40%
+                                    
+                                    let imgData = null;
+                                    if (typeof v.getImageData === 'function') {
+                                        imgData = v.getImageData();
+                                    } else if (v.imageData) {
+                                        imgData = v.imageData;
+                                    }
+
+                                    if (imgData) {
+                                        v.moveTo(imgData.x, 0); // 顶端对齐
+                                    }
+                                }, 0);
+                            },
+
+                            hidden: function () {
+                                comicViewerInstance.destroy();
+                                comicViewerInstance = null;
+                            },
+                        });
+                    }
+                    comicViewerInstance.show();
+                };
+
+                showComicArea.addEventListener('click', openViewer);
+            };
+
+            // 绑定 GPSoil
+            setupViewer('gpsoil-fold-corner', 'comic-main-image');
+            // 绑定 PassiveBLE (新增)
+            setupViewer('passiveble-fold-corner', 'passiveble-comic-image');
         }
     </script>
 
@@ -113,6 +188,100 @@
             .glass-btn-inactive:hover {
                 background-image: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
                 border-color: rgba(255,255,255,0.5);
+            }
+
+            /* --- 折页效果 CSS (调整色差与粒子) --- */
+            .paper-fold-container {
+                position: relative;
+                overflow: hidden; 
+            }
+            
+            .fold-corner-area {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 90px;
+                height: 90px;
+                z-index: 20;
+                cursor: pointer;
+                clip-path: polygon(0 100%, 100% 0, 100% 100%);
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                
+                /* 优化背景：使用更接近卡片背景的渐变，减少色差 */
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(240, 245, 255, 0.25) 100%);
+                
+                border-top: 1px solid rgba(255, 255, 255, 0.2); 
+                border-left: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .fold-glass-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 21;
+                
+                /* 轻微模糊 */
+                backdrop-filter: blur(2px); 
+                -webkit-backdrop-filter: blur(2px);
+                
+                /* 粒子纹理：使用更细腻、半透明的圆点 */
+                background-image: 
+                    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+                    radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+                background-size: 8px 8px, 6px 6px;
+                background-position: 0 0, 3px 3px;
+                
+                /* 渐变遮罩：让粒子效果呈现从左上到右下的柔和过渡 */
+                mask-image: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+                -webkit-mask-image: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+                
+                opacity: 0.8;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .fold-crease {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 200%;
+                height: 1px;
+                background: rgba(255, 255, 255, 0.4);
+                transform: rotate(45deg);
+                transform-origin: 0 0;
+                z-index: 22;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+
+            .paper-fold-container:hover .fold-corner-area {
+                width: 105px;
+                height: 105px;
+                /* 悬停时稍微加亮背景 */
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(240, 245, 255, 0.4) 100%);
+            }
+            
+            /* 悬停时：粒子层更清晰 */
+            .fold-corner-area:hover .fold-glass-overlay {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+            .fold-hint {
+                position: absolute;
+                bottom: 10px;
+                right: 8px;
+                font-size: 10px;
+                color: #1e3a8a;
+                font-weight: bold;
+                z-index: 23;
+                opacity: 0.6; 
+                text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+            .fold-corner-area:hover .fold-hint {
+                opacity: 1;
             }
         }
         @keyframes fadeIn {
@@ -230,6 +399,7 @@
         .pub-actions {
             position: absolute; top: clamp(0.8rem, 1vw, 1rem); right: clamp(0.8rem, 1vw, 1rem);
             font-size: 1em; display: flex; align-items: center;
+            z-index: 10; /* 确保在折页上方 */
         }
         .pub-actions a { color: #86868b; transition: color 0.2s ease; margin-left: 1rem; }
         .pub-actions a:first-child { margin-left: 0; }
@@ -265,6 +435,9 @@
             background-color: #d1d5db; /* gray-300 */
             border-color: #ffffff;
         }
+        
+        /* 确保弹窗层级 */
+        .viewer-container { z-index: 9999 !important; }
     </style>
 </head>
 <body class="antialiased text-gray-800">
@@ -416,22 +589,43 @@
             </div>
 
             <div class="pub-grid">
-                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
+                <!-- Modified Card for PassiveBLE (Added Fold) -->
+                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3680207.3723465" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
                     </div>
+                    
+                    <!-- Fold Corner Area for PassiveBLE -->
+                    <div id="passiveble-fold-corner" class="fold-corner-area" title="Click to view comic">
+                        <!-- Removed <img> tag -->
+                        <div class="fold-glass-overlay"></div>
+                        <div class="fold-crease"></div>
+                        <div class="fold-hint">View Comic</div>
+                    </div>
+
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2025 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">PassiveBLE: Towards Fully Commodity-Compatible BLE Backscatter</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Yijie Wu, Feiyu Li, Wei Kuang, Yuan He, Qian Zhang, Wei Wang</p>
                 </div>
-                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
+                
+                <!-- Modified Card for GPSoil -->
+                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3680207.3765236" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
                     </div>
+                    
+                    <!-- Fold Corner Area for GPSoil -->
+                    <div id="gpsoil-fold-corner" class="fold-corner-area" title="Click to view comic">
+                        <div class="fold-glass-overlay"></div>
+                        <div class="fold-crease"></div>
+                        <div class="fold-hint">View Comic</div>
+                    </div>
+
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2025 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Towards low-cost soil moisture sensing using GNSS signals</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Jingqi Lin, Minhao Cui, Serene Zhang, Lili Qiu, Jie Xiong, Wei Wang</p>
                 </div>
+
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3636534.3690674" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
@@ -735,6 +929,24 @@
         <i class="fa fa-arrow-up text-lg"></i>
     </button>
     
+    <!-- Hidden images for Viewer.js -->
+    <div id="comic-viewer-container" class="hidden">
+        <!-- GPSoil Comic -->
+        <img 
+            id="comic-main-image"
+            src="https://cdn.metaiot.group/metaiot/image/huixin/gpsoil.jpg" 
+            alt="GPSoil Explanation" 
+            referrerpolicy="no-referrer"
+        >
+        <!-- PassiveBLE Comic -->
+        <img 
+            id="passiveble-comic-image"
+            src="https://cdn.metaiot.group/metaiot/image/huixin/passiveble.jpg" 
+            alt="PassiveBLE Explanation" 
+            referrerpolicy="no-referrer"
+        >
+    </div>
+
     <script>
         window.addEventListener('scroll', () => {
             const btn = document.getElementById('backToTop');
