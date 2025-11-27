@@ -139,6 +139,10 @@
             setupViewer('gpsoil-fold-corner', 'comic-main-image');
             // 绑定 PassiveBLE
             setupViewer('passiveble-fold-corner', 'passiveble-comic-image');
+            // 绑定 GPSense (Added)
+            setupViewer('gpsense-fold-corner', 'gpsense-comic-image');
+            // 绑定 GPSMirror (Added)
+            setupViewer('gpsmirror-fold-corner', 'gpsmirror-comic-image');
         }
     </script>
 
@@ -646,16 +650,26 @@
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Jingqi Lin, Minhao Cui, Serene Zhang, Lili Qiu, Jie Xiong, Wei Wang</p>
                 </div>
 
-                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
+                <!-- Modified Card for GPSense (Added Fold) -->
+                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3636534.3690674" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
                         <a href="https://cdn.metaiot.group/metaiot/video/Mobicom24Demo.mp4" target="_blank"><i class="fa fa-video-camera mr-1"></i> Video</a>
                         <a href="https://metaiot.group/publication/slides/MobiCom2024_GPSense_slides.pdf" target="_blank"><i class="fa fa-desktop mr-1"></i> Slides</a>
                     </div>
+
+                    <!-- Fold Corner Area for GPSense -->
+                    <div id="gpsense-fold-corner" class="fold-corner-area" title="Click to view comic">
+                        <div class="fold-glass-overlay"></div>
+                        <div class="fold-crease"></div>
+                        <div class="fold-hint">View Comic</div>
+                    </div>
+
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2024 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">GPSense: Passive Sensing with Pervasive GPS Signals</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>*, Minhao Cui*, Ning Wang, Lili Qiu, Jie Xiong, Wei Wang</p>
                 </div>
+
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-yellow-400 flex flex-col h-full">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3698386.3699993" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
@@ -667,15 +681,26 @@
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">A Unified Tunnel-diode Based Low Power Signal Waveform Transform Hardware for RF Computing</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Liu Yang, Lehuan Yang, Zhiqing Luo, Chunshen Li, Xianan Zhang, Wei Wang</p>
                 </div>
-                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
+
+                <!-- Modified Card for GPSMirror (Added Fold) -->
+                <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3570361.3592511" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
                         <a href="https://metaiot.group/publication/slides/DongGPSMirror.pdf" target="_blank"><i class="fa fa-desktop mr-1"></i> Slides</a>
                     </div>
+                    
+                    <!-- Fold Corner Area for GPSMirror -->
+                    <div id="gpsmirror-fold-corner" class="fold-corner-area" title="Click to view comic">
+                        <div class="fold-glass-overlay"></div>
+                        <div class="fold-crease"></div>
+                        <div class="fold-hint">View Comic</div>
+                    </div>
+
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2023 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">GPSMirror: Expanding accurate GPS positioning to shadowed and indoor regions with backscatter</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Yirong Xie, Xianan Zhang, Wei Wang, Xinyu Zhang, Jianhua He</p>
                 </div>
+
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
                     <div class="pub-actions">
                         <a href="https://dl.acm.org/doi/10.1145/3570342" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
@@ -963,6 +988,20 @@
             id="passiveble-comic-image"
             src="https://cdn.metaiot.group/metaiot/image/huixin/passiveble.jpg" 
             alt="PassiveBLE Explanation" 
+            referrerpolicy="no-referrer"
+        >
+        <!-- GPSense Comic (Added) -->
+        <img 
+            id="gpsense-comic-image"
+            src="https://cdn.metaiot.group/metaiot/image/huixin/gpsense.jpg" 
+            alt="GPSense Explanation" 
+            referrerpolicy="no-referrer"
+        >
+        <!-- GPSMirror Comic (Added) -->
+        <img 
+            id="gpsmirror-comic-image"
+            src="https://cdn.metaiot.group/metaiot/image/huixin/gpsmirror.jpg" 
+            alt="GPSMirror Explanation" 
             referrerpolicy="no-referrer"
         >
     </div>
