@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能护膝康复系统 | Smart Knee Monitor Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            margin: 0; 
+            /* 浅蓝色渐变基础背景 */
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%); 
+            color: #1e293b; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            overflow: hidden; 
+            height: 100vh;
+        }
+        
+        /* 弥散光背景层，模拟毛玻璃感 */
+        .bg-diffuse {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+            filter: blur(100px);
+        }
+
+        canvas { display: block; }
+
+        /* 毛玻璃 UI 面板 */
+        .glass { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(25px) saturate(180%); 
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.05); 
+        }
+
+        .btn-medical { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-medical:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
+        
+        .loading-spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid white; width: 16px; height: 16px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .scan-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            position: absolute;
+            top: 50%;
+            animation: scan 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        @keyframes scan { 0%, 100% { top: 30%; } 50% { top: 70%; } }
+    </style>
+</head>
+<body>
+
+    <!-- 弥散背景装饰 -->
+    <div class="bg-diffuse"></div>
+
+    <!-- 侧边控制面板 -->
+    <div class="fixed top-6 left-6 z-10 space-y-4">
+        <div class="glass p-6 rounded-[32px] w-80">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="relative">
+                    <div class="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">KneeAI <span class="text-blue-600">Pro</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">专用护膝姿态监测</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <button id="connectBtn" class="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg">
+                    <span>🔌 连接串口设备</span>
+                </button>
+                <button id="simulateBtn" class="w-full py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 border border-slate-100 shadow-sm transition-all active:scale-95">
+                    <span>🔄 模拟轨迹演示</span>
+                </button>
+                
+                <div class="pt-4 space-y-2">
+                    <button id="interpretBtn" class="w-full py-3 btn-medical rounded-2xl font-bold flex items-center justify-center gap-2">
+                        <span id="interpretText">🧠 AI 姿态分析</span>
+                        <div id="interpretLoading" class="hidden loading-spinner"></div>
+                    </button>
+                    <button id="ttsBtn" class="w-full py-3 bg-slate-100/50 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all">
+                        <span id="ttsText">🔊 语音康复指导</span>
+                        <div id="ttsLoading" class="hidden loading-spinner"></div>
+                    </button>
+                </div>
+
+                <div id="statusIndicator" class="flex items-center gap-3 px-2 py-1">
+                    <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse"></div>
+                    <span id="statusText" class="text-xs font-bold text-slate-500 uppercase tracking-tighter uppercase">连接模型资源...</span>
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-2 gap-3">
+                <div class="bg-blue-50/30 p-3 rounded-2xl border border-blue-100/50">
+                    <p class="text-[10px] text-blue-400 font-black uppercase mb-1">弯曲 (Roll)</p>
+                    <span id="valRoll" class="text-lg font-mono font-black text-blue-700">0.00°</span>
+                </div>
+                <div class="bg-indigo-50/30 p-3 rounded-2xl border border-indigo-100/50">
+                    <p class="text-[10px] text-indigo-400 font-black uppercase mb-1">侧倾 (Pitch)</p>
+                    <span id="valPitch" class="text-lg font-mono font-black text-indigo-700">0.00°</span>
+                </div>
+            </div>
+
+            <div id="aiBox" class="mt-6 p-5 bg-white/60 rounded-3xl text-sm text-slate-600 leading-relaxed border border-white/50 hidden fade-in shadow-xl relative overflow-hidden">
+                <div class="scan-line"></div>
+                <div class="text-blue-600 font-black mb-2 flex items-center gap-2">
+                    <div class="w-1.5 h-4 bg-blue-600 rounded-full"></div>
+                    AI 康复建议
+                </div>
+                <p id="aiContent" class="relative z-10 italic">分析中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部数据面板 -->
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-10 w-full max-w-2xl px-6">
+        <div id="kamPanel" class="glass p-6 rounded-[40px] shadow-2xl flex justify-between items-center opacity-0 translate-y-10 transition-all duration-1000">
+            <div class="flex items-center gap-8 flex-1">
+                <div class="text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">稳定系数</div>
+                    <div id="kamAlpha" class="text-xl font-mono font-black text-slate-800">0.982</div>
+                </div>
+                <div class="w-px h-10 bg-slate-200/50"></div>
+                <div class="text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">采样频率</div>
+                    <div id="kamHz" class="text-xl font-mono font-black text-blue-600">--</div>
+                </div>
+                <div class="w-px h-10 bg-slate-200/50"></div>
+                <div class="flex-1">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">轨迹同步强度</div>
+                    <div class="w-full bg-slate-200/30 h-2 rounded-full overflow-hidden">
+                        <div id="intensityBar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-10 flex items-center gap-3 bg-blue-600 text-white px-5 py-2 rounded-2xl shadow-lg shadow-blue-200">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-100 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                </span>
+                <span class="text-xs font-black tracking-widest uppercase">Live</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="scene-container" class="w-full h-screen"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // --- 配置 ---
+        const apiKey = "";
+        const GEMINI_MODEL = "gemini-2.5-flash-preview-09-2025";
+        const TTS_MODEL = "gemini-2.5-flash-preview-tts";
+        const RAW_MODEL_URL = "https://cdn.metaiot.group/metaiot/files/huixin/xinyi.glb";
+        const PROXY_URL = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(RAW_MODEL_URL)}`;
+
+        let roll = 0, pitch = 0, lastTimestamp = 0, isSimulating = false;
+        const alpha = 0.98;
+
+        // --- Three.js 初始化 ---
+        const scene = new THREE.Scene();
+        // 设置透明场景，以便显示 CSS 渐变背景
+        scene.background = null; 
+        
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // 相机位置微调
+        camera.position.set(5, 2, 7);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.shadowMap.enabled = true;
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+        
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        // 将焦点设在模型右移后的位置 (x=2.5)
+        controls.target.set(2.5, 0.5, 0); 
+
+        // 移除了 gridHelper
+
+        const modelGroup = new THREE.Group();
+        // 模型向右移动 (x=2.5)，确保不被左侧图框遮挡
+        modelGroup.position.set(2.5, -0.5, 0); 
+        scene.add(modelGroup);
+
+        // --- 模型加载逻辑 ---
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const loader = new GLTFLoader();
+
+        async function loadDedicatedModel(url) {
+            try {
+                statusText.innerText = "正在通过代理通道同步资源...";
+                
+                loader.load(url, (gltf) => {
+                    const model = gltf.scene;
+                    model.traverse(node => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            if (node.material) node.material.envMapIntensity = 1.5;
+                        }
+                    });
+                    
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // 局部居中对齐
+                    model.position.set(-center.x, -center.y, -center.z);
+                    const scale = 3.8 / Math.max(size.x, size.y, size.z);
+                    modelGroup.scale.set(scale, scale, scale);
+                    
+                    modelGroup.clear();
+                    modelGroup.add(model);
+                    
+                    statusText.innerText = "护膝模型已就绪";
+                    statusDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-lg shadow-green-200";
+                    document.getElementById('kamPanel').classList.remove('opacity-0', 'translate-y-10');
+                }, 
+                (xhr) => {
+                    if (xhr.lengthComputable) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        statusText.innerText = `数据下载: ${percent}%`;
+                    }
+                },
+                (error) => {
+                    console.error("Loader Error:", error);
+                    statusText.innerText = "资源访问受限 (CORS/403)";
+                    statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                });
+            } catch (err) {
+                statusText.innerText = "系统连接异常";
+            }
+        }
+
+        loadDedicatedModel(PROXY_URL);
+
+        // --- 灯光系统 ---
+        // 增加环境光强度以配合浅色背景
+        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        mainLight.position.set(10, 15, 10);
+        mainLight.castShadow = true;
+        scene.add(mainLight);
+
+        const rimLight = new THREE.PointLight(0x3b82f6, 1.0);
+        rimLight.position.set(-5, 5, -5);
+        scene.add(rimLight);
+
+        // --- IMU 数据处理 ---
+        function processLine(line) {
+            const p = line.trim().split(",").map(parseFloat);
+            if (p.length < 5) return;
+            const now = performance.now();
+            const dt = lastTimestamp ? (now - lastTimestamp) / 1000 : 0.016;
+            lastTimestamp = now;
+            
+            if(!isSimulating && lastTimestamp) {
+                document.getElementById('kamHz').innerText = Math.round(1/dt) + "Hz";
+            }
+            
+            const aRoll = Math.atan2(p[1], p[2]);
+            const aPitch = Math.atan2(-p[0], Math.sqrt(p[1]*p[1] + p[2]*p[2]));
+            
+            roll = alpha * (roll + p[3] * dt) + (1 - alpha) * aRoll;
+            pitch = alpha * (pitch + p[4] * dt) + (1 - alpha) * aPitch;
+            
+            const rollDeg = roll * 180 / Math.PI;
+            const pitchDeg = pitch * 180 / Math.PI;
+
+            document.getElementById('valRoll').innerText = rollDeg.toFixed(2) + "°";
+            document.getElementById('valPitch').innerText = pitchDeg.toFixed(2) + "°";
+            
+            modelGroup.rotation.x = pitch; 
+            modelGroup.rotation.z = -roll; 
+
+            const intensity = Math.min(100, Math.abs(rollDeg) * 1.5);
+            document.getElementById('intensityBar').style.width = intensity + "%";
+        }
+
+        // --- Gemini AI ---
+        async function callGemini(url, payload) {
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+                    if (res.ok) return await res.json();
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            throw new Error("AI Failure");
+        }
+
+        document.getElementById('interpretBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('interpretBtn');
+            btn.disabled = true;
+            document.getElementById('interpretLoading').classList.remove('hidden');
+            document.getElementById('aiBox').classList.remove('hidden');
+            document.getElementById('aiContent').innerText = "AI 正在分析姿态特征...";
+
+            const prompt = `你是康复专家。当前护膝传感器数据：弯曲 ${(roll*180/Math.PI).toFixed(1)}°，偏移 ${(pitch*180/Math.PI).toFixed(1)}°。请给出一句极短的专业康复建议。`;
+            
+            try {
+                const result = await callGemini(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+                    contents: [{ parts: [{ text: prompt }] }]
+                });
+                document.getElementById('aiContent').innerText = result.candidates?.[0]?.content?.parts?.[0]?.text || "分析完毕。";
+            } catch (e) {
+                document.getElementById('aiContent').innerText = "AI 离线，请参考数值。";
+            } finally {
+                btn.disabled = false;
+                document.getElementById('interpretLoading').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('ttsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('ttsBtn');
+            btn.disabled = true;
+            document.getElementById('ttsLoading').classList.remove('hidden');
+
+            const text = Math.abs(roll * 180 / Math.PI) > 45 ? "警告：弯曲幅度较大，请减缓运动频率。" : "当前姿态良好，请保持。";
+
+            try {
+                const result = await callGemini(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${apiKey}`, {
+                    contents: [{ parts: [{ text: "Speak: " + text }] }],
+                    generationConfig: { 
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                    },
+                    model: TTS_MODEL
+                });
+                const base64 = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                if (base64) {
+                    const bin = atob(base64), len = bin.length, bytes = new Int16Array(len / 2);
+                    for (let i = 0; i < len; i += 2) bytes[i/2] = (bin.charCodeAt(i+1) << 8) | bin.charCodeAt(i);
+                    const wavBuf = new ArrayBuffer(44 + bytes.length * 2), view = new DataView(wavBuf);
+                    const s = (o, v) => { for (let i = 0; i < v.length; i++) view.setUint8(o + i, v.charCodeAt(i)); };
+                    s(0, 'RIFF'); view.setUint32(4, 36 + bytes.length * 2, true); s(8, 'WAVE'); s(12, 'fmt ');
+                    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+                    view.setUint32(24, 24000, true); view.setUint32(28, 48000, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+                    s(36, 'data'); view.setUint32(40, bytes.length * 2, true);
+                    new Uint8Array(wavBuf, 44).set(new Uint8Array(bytes.buffer));
+                    new Audio(URL.createObjectURL(new Blob([wavBuf], { type: 'audio/wav' }))).play();
+                }
+            } catch(e) {}
+            finally {
+                btn.disabled = false;
+                document.getElementById('ttsLoading').classList.add('hidden');
+            }
+        });
+
+        // --- 交互控制 ---
+        document.getElementById('simulateBtn').addEventListener('click', () => {
+            if (isSimulating) return;
+            isSimulating = true;
+            statusText.innerText = "演示模式: 实时渲染";
+            document.getElementById('kamHz').innerText = "60Hz";
+            let t = 0;
+            const loop = () => {
+                if(!isSimulating) return;
+                t += 0.04;
+                const sR = Math.sin(t) * 0.8; 
+                const sP = Math.sin(t * 0.5) * 0.2; 
+                processLine(`${-Math.sin(sP)*9.8},${Math.sin(sR)*9.8},9.8,0.5,${Math.cos(t)*0.2},0`);
+                requestAnimationFrame(loop);
+            };
+            loop();
+        });
+
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            try {
+                const port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 115200 });
+                isSimulating = false;
+                statusText.innerText = "串口设备已连接";
+                const decoder = new TextDecoderStream();
+                port.readable.pipeTo(decoder.writable);
+                const reader = decoder.readable.getReader();
+                let buf = "";
+                while(true) {
+                    const {value, done} = await reader.read();
+                    if(done) break;
+                    buf += value;
+                    let lines = buf.split("\n");
+                    buf = lines.pop();
+                    for(let l of lines) processLine(l);
+                }
+            } catch(e) {}
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
