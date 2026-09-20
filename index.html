@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Huixin Dong - Academic Homepage</title>
+    <meta name="description" content="Huixin Dong, Postdoctoral Researcher at HKUST. Research in backscatter networking, wireless sensing, and low-power IoT.">
+    <link rel="canonical" href="https://academic.huixin.space/">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
@@ -23,6 +25,7 @@
         function filterPublications(type) {
             const cards = document.querySelectorAll('.pub-card');
             cards.forEach(card => {
+                card.hidden = !(type === 'all' || card.classList.contains(type));
                 if (type === 'all' || card.classList.contains(type)) {
                     card.classList.remove('hidden');
                     card.style.animation = 'fadeIn 0.5s ease';
@@ -33,6 +36,7 @@
             
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => {
+                btn.setAttribute('aria-pressed', String(btn.id === `btn-${type}`));
                 btn.classList.remove('bg-blue-800', 'text-white', 'shadow-md');
                 btn.classList.add('glass-btn-inactive', 'text-gray-700');
             });
@@ -46,25 +50,12 @@
         // --- 2. 移动端菜单 ---
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        // --- 3. 期刊折叠 ---
-        function toggleJournal(element) {
-            const yearList = element.querySelector('.year-list');
-            const icon = element.querySelector('.fold-icon');
-            yearList.classList.toggle('hidden');
-            if (yearList.classList.contains('hidden')) {
-                icon.classList.remove('fa-caret-down');
-                icon.classList.add('fa-caret-right');
-            } else {
-                icon.classList.remove('fa-caret-right');
-                icon.classList.add('fa-caret-down');
-            }
+            const closed = menu.classList.toggle('hidden');
+            document.getElementById('mobile-menu-toggle').setAttribute('aria-expanded', String(!closed));
         }
 
         // --- 4. 初始化 ---
-        window.onload = function() {
+        document.addEventListener('DOMContentLoaded', function() {
             filterPublications('a');
             const avatarImg = document.getElementById('avatar-img');
             if(avatarImg) {
@@ -75,7 +66,7 @@
             }
             // 初始化漫画查看器
             initComicViewer();
-        }
+        });
 
         // --- 5. 漫画查看器逻辑 ---
         function initComicViewer() {
@@ -85,6 +76,7 @@
                 let comicViewerInstance;
 
                 if (!showComicArea || !comicImage) return;
+                if (typeof Viewer === 'undefined') return;
 
                 const openViewer = (e) => {
                     e.preventDefault();
@@ -315,7 +307,7 @@
             overscroll-behavior-y: none;
         }
         
-        .nav-link { position: relative; font-size: 1.1rem !important; }
+        .nav-link { position: relative; font-size: 0.82rem !important; }
         .nav-link::after {
             content: ''; position: absolute; width: 0; height: 2px;
             bottom: -2px; left: 0; background-color: #0071e3;
@@ -426,11 +418,6 @@
         button { font-size: 0.95rem !important; }
         .mobile-nav-link { font-size: 1rem !important; }
 
-        .journal-item { cursor: pointer; display: flex; flex-direction: row; align-items: flex-start; gap: 0.25rem; flex-wrap: wrap; padding: 2px 8px; border-radius: 8px; transition: all 0.2s ease; }
-        .journal-item:hover { color: #0071e3; background-color: rgba(0, 113, 227, 0.1); }
-        .journal-item > .year-list { width: 100%; margin-left: 1.8rem; color: #86868b; font-size: 0.9em; }
-        .journal-item > span { display: inline-flex; align-items: center; }
-        .fold-icon { transition: all 0.2s ease; }
         
         .talk-item-dot {
             position: absolute;
@@ -449,7 +436,30 @@
         }
         
         .viewer-container { z-index: 9999 !important; }
+
+        /* Keep metadata and actions in separate rows, including narrow cards. */
+        [hidden] { display: none !important; }
+        .pub-card { min-width: 0; }
+        .pub-card h3 { overflow-wrap: anywhere; }
+        .pub-actions { position: static; order: 3; flex-wrap: wrap; gap: .6rem 1rem; padding-top: .7rem; margin-top: auto; }
+        .pub-actions a { margin-left: 0 !important; color: #475569; }
+        .paper-fold-container { padding-bottom: 3.5rem; }
+        .reviewer-list { list-style: none; padding: 0; margin: 0; }
+        .reviewer-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; padding: .6rem 0; border-bottom: 1px solid #e2e8f0; font-size: .95rem; line-height: 1.5; }
+        .reviewer-list li:last-child { border-bottom: 0; }
+        .reviewer-years { white-space: nowrap; color: #475569; font-size: .85rem; text-align: right; }
+        a:focus-visible, button:focus-visible { outline: 2px solid #1e40af; outline-offset: 4px; }
+        @media (max-width: 640px) {
+            .reviewer-list li { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
+            .reviewer-years { text-align: left; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+
     </style>
+<noscript><style>.pub-card[hidden] { display: flex !important; } .filter-btn { display: none; }</style></noscript>
 </head>
 <body class="antialiased text-gray-800">
 
@@ -460,7 +470,7 @@
                     <span class="text-2xl font-bold text-blue-900 hidden sm:inline-block tracking-tight">Huixin Dong (董慧鑫)</span>
                     <span class="text-xl font-bold text-blue-900 sm:hidden">H. Dong</span>
                 </a>
-                <nav class="hidden lg:flex space-x-6">
+                <nav class="hidden xl:flex space-x-4">
                     <a href="#research" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Overview</a>
                     <a href="#news" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">News</a>
                     <a href="#publications" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Publications</a>
@@ -470,14 +480,14 @@
                     <a href="#experience" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Experience</a>
                     <a href="#education" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Education</a>
                 </nav>
-                <div class="lg:hidden">
-                    <button onclick="toggleMobileMenu()" class="text-gray-600 hover:text-blue-800 focus:outline-none p-1">
+                <div class="xl:hidden">
+                    <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMobileMenu()" class="text-gray-600 hover:text-blue-800 focus:outline-none p-1">
                         <i class="fa fa-bars text-lg"></i>
                     </button>
                 </div>
             </div>
         </div>
-        <div id="mobile-menu" class="hidden lg:hidden bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg absolute w-full left-0 top-16">
+        <div id="mobile-menu" class="hidden xl:hidden bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg absolute w-full left-0 top-16">
             <nav class="flex flex-col p-3 space-y-2">
                 <a href="#research" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Overview</a>
                 <a href="#news" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">News</a>
@@ -502,7 +512,7 @@
                 >
             </div>
             <div class="sidebar-info">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Huixin Dong <span class="text-base font-normal text-gray-500">(董慧鑫)</span></h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Huixin Dong <span class="block whitespace-nowrap text-base font-normal text-gray-500">(董慧鑫)</span></h1>
                 <p class="text-lg text-blue-800 font-medium mb-3">Postdoctoral Researcher</p>
                 <p class="text-gray-600 mb-4 text-sm leading-tight">The Hong Kong University of Science and Technology (HKUST)</p>
                 <div class="space-y-3 mb-4 text-sm text-gray-600">
@@ -515,6 +525,8 @@
                         <span class="text-sm">Hong Kong, China</span>
                     </div>
                 </div>
+                <p class="text-sm text-gray-600 mb-3"><a href="mailto:dxhuixin@gmail.com" class="hover:text-blue-800 hover:underline">dxhuixin@gmail.com</a></p>
+                <p class="text-sm mb-3"><a href="https://huixin.space/" class="text-blue-800 hover:underline">Classic academic view <span aria-hidden="true">↗</span></a></p>
                 <div class="mb-4">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Research Interests</h3>
                     <div class="flex flex-wrap gap-2 lg:justify-center justify-start">
@@ -540,11 +552,11 @@
                 <i class="fa fa-user-circle-o mr-3 text-blue-800"></i>Overview
             </h2>
             <div class="glass-card rounded-2xl p-6">
-                <p class="text-gray-700 leading-relaxed text-justify text-base">
+                <p class="text-gray-700 leading-relaxed text-base">
                     I am currently a Postdoctoral Researcher in the research group led by <a href="https://www.cse.ust.hk/~qianzh/" class="text-blue-700 hover:underline font-semibold transition">Prof. Qian Zhang</a> at The Hong Kong University of Science and Technology (HKUST). 
                     Previously, I obtained my Ph.D. degree from Huazhong University of Science and Technology (HUST) in 2025, under the supervision of <a href="https://cs.whu.edu.cn/info/1019/55961.htm" class="text-blue-700 hover:underline font-semibold transition">Prof. Wei Wang</a> in the MetaIoT Lab.
                     <br><br>
-                    My research interests primarily lie in <strong>Backscatter Networking</strong>, <strong>Wireless Sensing</strong>, and <strong>Low-Power IoT Systems</strong>. I am dedicated to pushing the boundaries of ultra-low-power communication and pervasive sensing technologies. My works have been published in top-tier conferences including <strong>MobiCom, SenSys, and UbiComp</strong>.
+                    My research interests primarily lie in <strong>Backscatter Networking</strong>, <strong>Wireless Sensing</strong>, and <strong>Low-Power IoT Systems</strong>. My work has appeared at <strong>MobiCom, UbiComp, and the SenSys RFCom workshop</strong>.
                 </p>
             </div>
         </section>
@@ -555,16 +567,16 @@
             </h2>
             <div class="glass-card rounded-2xl p-6 space-y-3">
                     <div class="flex items-start">
-                    <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.06</span>
+                    <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.08</span>
                     <span class="text-gray-700 text-sm"> 🎉🎉 AmbientRider is accepted by  <strong>ACM MobiCom 2026</strong>!</span>
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.06</span>
-                    <span class="text-gray-700 text-sm"> 🎉🎉 Vesta is accepted by  <strong>Ubicomp/IMWUT 2026</strong>, see you in Shanghai!</span>
+                    <span class="text-gray-700 text-sm"> 🎉🎉 VESTA is accepted by  <strong>UbiComp/IMWUT 2026</strong>, see you in Shanghai!</span>
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.03</span>
-                    <span class="text-gray-700 text-sm">🎉🎉 I am excited that our ACLGuard product has been awarded the <strong>Golden Price</strong> in the International Exhibition of Inventions Geneva!</span>
+                    <span class="text-gray-700 text-sm">🎉🎉 I am excited that our ACLGuard product has been awarded the <strong>Golden Prize</strong> in the International Exhibition of Inventions Geneva!</span>
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2025.09</span>
@@ -576,14 +588,14 @@
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2025.03</span>
-                    <span class="text-gray-700 text-sm">🎉🎉 Pass the final defense at <strong>HUST</strong>!</span>
+                    <span class="text-gray-700 text-sm">🎉🎉 Passed my Ph.D. defense at <strong>HUST</strong>!</span>
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2024.12</span>
                     <span class="text-gray-700 text-sm">🎉🎉 PassiveBLE is accepted by <strong>MobiCom 2025</strong>.</span>
                 </div>
                 <div class="flex items-start">
-                    <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2024.06</span>
+                    <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2024.11</span>
                     <span class="text-gray-700 text-sm">🎉🎉 TuniScatter is awarded as “Best Paper” in <strong>RFCom 2024</strong>.</span>
                 </div>
                 <div class="flex items-start">
@@ -603,8 +615,8 @@
             </h2>
             <div class="flex flex-col sm:flex-row justify-between items-end mb-4">
                 <div class="flex flex-wrap gap-3">
-                    <button id="btn-a" class="filter-btn bg-blue-800 text-white shadow-md px-4 py-2 rounded-full text-sm font-medium transition hover:opacity-90 backdrop-blur-sm" onclick="filterPublications('a')">Selected Publications</button>
-                    <button id="btn-all" class="filter-btn glass-btn-inactive text-gray-700 px-4 py-2 rounded-full text-sm font-medium transition" onclick="filterPublications('all')">All Publications</button>
+                    <button type="button" aria-pressed="true" id="btn-a" class="filter-btn bg-blue-800 text-white shadow-md px-4 py-2 rounded-full text-sm font-medium transition hover:opacity-90 backdrop-blur-sm" onclick="filterPublications('a')">Selected Publications</button>
+                    <button type="button" aria-pressed="false" id="btn-all" class="filter-btn glass-btn-inactive text-gray-700 px-4 py-2 rounded-full text-sm font-medium transition" onclick="filterPublications('all')">All Publications</button>
                 </div>
                 <div class="text-xs text-gray-400 mt-2 sm:mt-0 italic tracking-wide">
                     Note: ‘*’ marks co-primary authors. “✉” marks the corresponding authors.
@@ -622,14 +634,14 @@
                 <!-- PassiveBLE Card -->
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3680207.3723465" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3680207.3723465" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     
-                    <div id="passiveble-fold-corner" class="fold-corner-area" title="Click to view comic">
+                    <a id="passiveble-fold-corner" class="fold-corner-area" href="https://cdn.metaiot.group/metaiot/image/huixin/passiveble.jpg" aria-label="View passiveble comic" title="Click to view comic">
                         <div class="fold-glass-overlay"></div>
                         <div class="fold-crease"></div>
                         <div class="fold-hint">View Comic</div>
-                    </div>
+                    </a>
 
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2025 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">PassiveBLE: Towards Fully Commodity-Compatible BLE Backscatter</h3>
@@ -639,33 +651,33 @@
                 <!-- GPSoil Card -->
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3680207.3765236" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3680207.3765236" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     
-                    <div id="gpsoil-fold-corner" class="fold-corner-area" title="Click to view comic">
+                    <a id="gpsoil-fold-corner" class="fold-corner-area" href="https://cdn.metaiot.group/metaiot/image/huixin/gpsoil.jpg" aria-label="View gpsoil comic" title="Click to view comic">
                         <div class="fold-glass-overlay"></div>
                         <div class="fold-crease"></div>
                         <div class="fold-hint">View Comic</div>
-                    </div>
+                    </a>
 
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2025 (CCF A)</span></div>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Towards low-cost soil moisture sensing using GNSS signals</h3>
+                    <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">GPSoil: Towards low-cost soil moisture sensing using GNSS signals</h3>
                     <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Jingqi Lin, Minhao Cui, Serene Zhang, Lili Qiu, Jie Xiong, Wei Wang</p>
                 </div>
 
                 <!-- GPSense Card -->
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3636534.3690674" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
-                        <a href="https://cdn.metaiot.group/metaiot/files/video/Mobicom24Demo.mp4" target="_blank"><i class="fa fa-video-camera mr-1"></i> Video</a>
-                        <a href="https://metaiot.group/publication/slides/MobiCom2024_GPSense_slides.pdf" target="_blank"><i class="fa fa-desktop mr-1"></i> Slides</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3636534.3690674" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
+                        <a href="https://cdn.metaiot.group/files/video/Mobicom24Demo.mp4" target="_blank" rel="noopener noreferrer"><i class="fa fa-video-camera mr-1"></i> Video</a>
+                        <a href="https://cdn.metaiot.group/files/slides/MobiCom2024_GPSense_slides.pdf" target="_blank" rel="noopener noreferrer"><i class="fa fa-desktop mr-1"></i> Slides</a>
                     </div>
 
-                    <div id="gpsense-fold-corner" class="fold-corner-area" title="Click to view comic">
+                    <a id="gpsense-fold-corner" class="fold-corner-area" href="https://cdn.metaiot.group/metaiot/image/huixin/gpsense.jpg" aria-label="View gpsense comic" title="Click to view comic">
                         <div class="fold-glass-overlay"></div>
                         <div class="fold-crease"></div>
                         <div class="fold-hint">View Comic</div>
-                    </div>
+                    </a>
 
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2024 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">GPSense: Passive Sensing with Pervasive GPS Signals</h3>
@@ -675,7 +687,7 @@
                 <!-- TuniScatter Card -->
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-yellow-400 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3698386.3699993" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3698386.3699993" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     <div class="mb-2 flex gap-2">
                         <span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">SenSys-RFCom 2024</span>
@@ -688,15 +700,15 @@
                 <!-- GPSMirror Card -->
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full relative paper-fold-container">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3570361.3592511" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
-                        <a href="https://metaiot.group/publication/slides/DongGPSMirror.pdf" target="_blank"><i class="fa fa-desktop mr-1"></i> Slides</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3570361.3592511" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
+                        <a href="https://cdn.metaiot.group/files/slides/DongGPSMirror.pdf" target="_blank" rel="noopener noreferrer"><i class="fa fa-desktop mr-1"></i> Slides</a>
                     </div>
                     
-                    <div id="gpsmirror-fold-corner" class="fold-corner-area" title="Click to view comic">
+                    <a id="gpsmirror-fold-corner" class="fold-corner-area" href="https://cdn.metaiot.group/metaiot/image/huixin/gpsmirror.jpg" aria-label="View gpsmirror comic" title="Click to view comic">
                         <div class="fold-glass-overlay"></div>
                         <div class="fold-crease"></div>
                         <div class="fold-hint">View Comic</div>
-                    </div>
+                    </a>
 
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2023 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">GPSMirror: Expanding accurate GPS positioning to shadowed and indoor regions with backscatter</h3>
@@ -704,9 +716,6 @@
                 </div>
 
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
-                    <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3570342" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
-                    </div>
                     <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IMWUT 2026 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">VESTA: In-Vehicle Sensing with GNSS Satellite Signals</h3>
                     <p class="text-gray-500 text-xs mb-3">Ning Wang, <strong>Huixin Dong</strong>, Minhao Cui, Lili Qiu, Jie Xiong and Wei Wang</p>
@@ -714,41 +723,52 @@
                 
                 <div class="pub-card a glass-card card-hover rounded-xl p-5 border-l-4 border-l-red-500 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3570342" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3570342" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
-                    <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IMWUT 2023 (CCF A)</span></div>
+                    <div class="mb-2"><span class="bg-red-50/80 text-red-700 border border-red-100/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IMWUT 2022 / UbiComp 2023 (CCF A)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">C-Cube: Rethinking distributed beamforming for concurrent charging in backscatter networks</h3>
                     <p class="text-gray-500 text-xs mb-3">Shiyue He, Wenyuan Ma, <strong>Huixin Dong</strong>, Lixia Xiao, Tao Jiang</p>
                 </div>
 
-                <div class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
+                <!-- EATag: included in All Publications only (JCR Q2). -->
+                <div hidden class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://ieeexplore.ieee.org/document/10695776" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://doi.org/10.1145/3837766" target="_blank" rel="noopener noreferrer"><i class="fa fa-external-link mr-1"></i> Paper</a>
                     </div>
-                    <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IEEE IoT-J 2024</span></div>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Accurate Indoor Localization for Bluetooth Low Energy Backscatter</h3>
-                    <p class="text-gray-500 text-xs mb-3">Zhiqing Luo, Weiming Li, Yijie Wu, <strong>Huixin Dong</strong>, Wei Wang</p>
+                    <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">ACM TIOT 2026 (JCR Q2)</span></div>
+                    <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Reliable Battery-free Backscatter Video Transmission for Ubiquitous Vision-based Sensing</h3>
+                    <p class="text-gray-500 text-xs mb-3"><strong>Huixin Dong</strong>, Xinyi Wu, Liu Yang, Xianan Zhang, Guochao Song, Wei Wang</p>
+                    <p class="text-gray-400 text-xs italic">ACM Transactions on Internet of Things · Published online August 10, 2026</p>
                 </div>
-                <div class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
+
+                <div hidden class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://ieeexplore.ieee.org/document/9052666" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://ieeexplore.ieee.org/document/10695776" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
+                    </div>
+                    <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IEEE IoT-J 2025</span></div>
+                    <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Accurate Indoor Localization for Bluetooth Low Energy Backscatter</h3>
+                    <p class="text-gray-500 text-xs mb-3">Zhiqing Luo, Weiming Li, Yijie Wu, <strong>Huixin Dong</strong>, Luanjian Bian, Wei Wang</p>
+                </div>
+                <div hidden class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
+                    <div class="pub-actions">
+                        <a href="https://ieeexplore.ieee.org/document/9052666" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IEEE IoT-J 2020</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">FreeScatter: Enabling concurrent backscatter communication using antenna arrays</h3>
                     <p class="text-gray-500 text-xs mb-3">Qianyi Huang, Guochao Song, Wei Wang, <strong>Huixin Dong</strong>, Jin Zhang, Qian Zhang</p>
                 </div>
-                <div class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
+                <div hidden class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://ieeexplore.ieee.org/document/9887902" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://ieeexplore.ieee.org/document/9887902" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">IEEE TVT 2023</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">WiSion: Bolstering MAV 3D indoor state estimation by embracing multipath of WiFi</h3>
                     <p class="text-gray-500 text-xs mb-2">Fei Xiao, Shengkai Zhang, Sheyang Tang, Shaojie Shen, <strong>Huixin Dong</strong>, Yi Zhong</p>
                     <p class="text-gray-400 text-[9px] italic">IEEE Transactions on Vehicular Technology 72 (1), 253-266</p>
                 </div>
-                <div class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
+                <div hidden class="pub-card other glass-card card-hover rounded-xl p-5 border-l-4 border-l-gray-400 flex flex-col h-full">
                     <div class="pub-actions">
-                        <a href="https://dl.acm.org/doi/10.1145/3636534.3698836" target="_blank"><i class="fa fa-file-pdf-o mr-1"></i> PDF</a>
+                        <a href="https://dl.acm.org/doi/10.1145/3636534.3698836" target="_blank" rel="noopener noreferrer"><i class="fa fa-file-pdf-o mr-1"></i> Paper</a>
                     </div>
                     <div class="mb-2"><span class="bg-gray-100/80 text-gray-700 border border-gray-200/50 px-2 py-1 rounded text-xs font-bold uppercase backdrop-blur-sm">MobiCom 2024 (CCF A, Demo)</span></div>
                     <h3 class="text-sm font-bold text-gray-900 mb-2 leading-tight flex-grow">Real-time Respiration Sensing with Pervasive GPS Signals</h3>
@@ -799,6 +819,10 @@
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
+                    <div class="bg-blue-50/60 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0"><i class="fa fa-graduation-cap text-base"></i></div>
+                    <div><h3 class="font-bold text-gray-900 text-sm">“ZhiXing” Postgraduate Scholarship</h3><p class="text-gray-500 text-xs mt-1">2024.09 | HUST</p></div>
+                </div>
+                <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
                     <div class="bg-blue-50/60 text-blue-800 w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-star text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">Student Academic Rising Star in HUST</h3>
@@ -817,45 +841,20 @@
                     <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-users mr-2 text-blue-700"></i>Committee Member</h3>
                     <ul class="space-y-2 text-base text-gray-700 service-item">
                         <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Technical Program Committee (TPC), <strong>ICPADS 2026</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiCom 2026</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiCom 2025</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiSys 2025</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiCom 2025, 2026</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiSys 2024, 2025</strong></span></li>
                         <li class="flex items-start"><i class="fa fa-check text-blue-600 mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>SenSys 2024</strong></span></li>
                     </ul>
                 </div>
                 <div class="glass-card rounded-xl p-4 h-full">
                     <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-book mr-2 text-blue-700"></i>Journal Reviewer</h3>
-                    <ul class="space-y-1 text-sm text-gray-700 service-item">
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>ACM IMWUT</span>
-                            <div class="year-list hidden">2023, 2024, 2025, 2026</div>
-                        </li>
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>IEEE/ACM ToN</span>
-                            <div class="year-list hidden">2024, 2025</div>
-                        </li>
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>IEEE/ACM TMC</span>
-                            <div class="year-list hidden">2024, 2025, 2026</div>
-                        </li>
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>IEEE TWC</span>
-                            <div class="year-list hidden">2026</div>
-                        </li>
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>IEEE TCOM</span>
-                            <div class="year-list hidden">2026</div>
-                        </li>
-                        <li class="journal-item flex items-start" onclick="toggleJournal(this)">
-                            <i class="fa fa-caret-right fold-icon text-gray-400 mt-0.5 mr-2 text-sm"></i>
-                            <span>IEEE IoT-J</span>
-                            <div class="year-list hidden">2024, 2025</div>
-                        </li>
+                    <ul class="reviewer-list">
+                        <li><span>IEEE Transactions on Mobile Computing (TMC)</span><span class="reviewer-years">Multiple years</span></li>
+                        <li><span>IEEE Internet of Things Journal (IoT-J)</span><span class="reviewer-years">Multiple years</span></li>
+                        <li><span>IEEE Transactions on Wireless Communications (TWC)</span><span class="reviewer-years">2026</span></li>
+                        <li><span>IEEE Transactions on Communications (TCOM)</span><span class="reviewer-years">2026</span></li>
+                        <li><span>ACM IMWUT</span><span class="reviewer-years">2026</span></li>
+                        <li><span>IEEE/ACM Transactions on Networking (ToN)</span><span class="reviewer-years">2024, 2025</span></li>
                     </ul>
                 </div>
             </div>
@@ -990,10 +989,10 @@
     </main>
 
     <footer class="mt-auto py-6 text-center text-sm text-gray-400">
-        <p>© 2025 Huixin Dong. All rights reserved. <span class="mx-2 text-gray-300">|</span> Last updated: Nov. 25, 2025</p>
+        <p>© 2026 Huixin Dong. All rights reserved. <span class="mx-2 text-gray-300">|</span> Last updated: Sep. 20, 2026</p>
     </footer>
 
-    <button id="backToTop" class="fixed bottom-6 right-6 bg-blue-800/90 backdrop-blur-sm text-white w-12 h-12 rounded-full shadow-xl hidden items-center justify-center hover:bg-blue-700 transition z-50 transform hover:scale-110" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <button aria-label="Back to top" id="backToTop" class="fixed bottom-6 right-6 bg-blue-800/90 backdrop-blur-sm text-white w-12 h-12 rounded-full shadow-xl hidden items-center justify-center hover:bg-blue-700 transition z-50 transform hover:scale-110" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="fa fa-arrow-up text-lg"></i>
     </button>
     
