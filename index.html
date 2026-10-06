@@ -16,7 +16,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 
     <script>
         const fallbackAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMyIiBoZWlnaHQ9IjEzMiIgdmlld0JveD0iMCAwIDEzMiAxMzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNjYiIGN5PSI0NSIgcj0iMzAiIGZpbGw9IiMxRTNBOEEiLz48dGV4dCB4PSI2NiIgeT0iODUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zNWUiPkRIPC90ZXh0Pjwvc3ZnPg==';
@@ -462,6 +462,118 @@
 
     </style>
 <noscript><style>.pub-card[hidden] { display: flex !important; } .filter-btn { display: none; }</style></noscript>
+
+    <!-- ===================== Travel overlay ===================== -->
+    <style>
+        .travel-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background:
+                radial-gradient(1200px 420px at 50% -12%, rgba(30, 64, 175, 0.075), rgba(30, 64, 175, 0) 70%),
+                linear-gradient(180deg, #fcfdfe 0%, #f4f7fa 100%);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .35s ease, visibility 0s linear .35s;
+        }
+        .travel-overlay.is-open { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+        .travel-sheet {
+            max-width: 44rem;
+            margin: 0 auto;
+            padding: clamp(4.5rem, 13vh, 8rem) clamp(1.35rem, 5vw, 2.5rem) clamp(4.5rem, 13vh, 8rem);
+        }
+        .travel-overlay.is-open .travel-sheet { animation: travelRise .8s cubic-bezier(.22, .61, .36, 1) .08s both; }
+        @keyframes travelRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .travel-kicker {
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+            font-weight: 500;
+            letter-spacing: .42em;
+            text-transform: uppercase;
+            color: #1e40af;
+            margin-bottom: clamp(2.2rem, 6vh, 3.4rem);
+        }
+        .travel-kicker .travel-rule { flex: 1; height: 1px; }
+        .travel-kicker .travel-rule:first-child { background: linear-gradient(90deg, rgba(30, 64, 175, 0), rgba(30, 64, 175, .45)); }
+        .travel-kicker .travel-rule:last-child { background: linear-gradient(90deg, rgba(30, 64, 175, .45), rgba(30, 64, 175, 0)); }
+        .travel-kicker b { font-weight: 500; padding-left: .42em; }
+        .travel-lead {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(1.15rem, 1.75vw, 1.45rem);
+            line-height: 1.95;
+            color: #27303c;
+            margin: 0;
+        }
+        .travel-lead::first-letter {
+            float: left;
+            font-size: 3.5em;
+            line-height: .78;
+            font-weight: 500;
+            color: #1e40af;
+            padding: .06em .1em 0 0;
+        }
+        .travel-ornament { display: block; width: 132px; height: 11px; margin: clamp(2.4rem, 6vh, 3.6rem) auto; }
+        .travel-poem { margin: 0; padding: 0; border: 0; text-align: center; }
+        .travel-poem p {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-size: clamp(1.35rem, 2.3vw, 1.85rem);
+            line-height: 1.8;
+            color: #1b2430;
+            margin: 0 0 1.6rem;
+        }
+        .travel-poem cite {
+            display: block;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-style: normal;
+            font-size: .72rem;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #6b7683;
+        }
+        .travel-coda {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+            line-height: 1.9;
+            color: #27303c;
+            text-align: center;
+            margin: 0;
+        }
+        .travel-close {
+            position: fixed;
+            top: 1.15rem;
+            right: 1.15rem;
+            z-index: 9999;
+            width: 2.6rem;
+            height: 2.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(30, 64, 175, .22);
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, .82);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            color: #1e40af;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: background .25s ease, border-color .25s ease, transform .25s ease, color .25s ease;
+        }
+        .travel-close:hover { background: #1e40af; border-color: #1e40af; color: #fff; transform: translateY(-1px); }
+        @media (max-width: 640px) {
+            .travel-lead { line-height: 1.8; }
+            .travel-close { top: .7rem; right: .7rem; width: 2.3rem; height: 2.3rem; }
+        }
+    </style>
 </head>
 <body class="antialiased text-gray-800">
 
@@ -480,6 +592,7 @@
                     <a href="#services" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Services</a>
                     <a href="#talks" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Talks</a>
                     <a href="#experience" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Experience</a>
+                    <a href="#travel" onclick="openTravel(event)" class="nav-link text-gray-600 hover:text-blue-800 font-medium uppercase tracking-wide text-xs">Travel</a>
                 </nav>
                 <div class="xl:hidden">
                     <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMobileMenu()" class="text-gray-600 hover:text-blue-800 focus:outline-none p-1">
@@ -497,6 +610,7 @@
                 <a href="#services" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Services</a>
                 <a href="#talks" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Talks</a>
                 <a href="#experience" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Experience</a>
+                <a href="#travel" onclick="toggleMobileMenu(); openTravel(event);" class="block text-gray-700 hover:text-blue-800 hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Travel</a>
             </nav>
         </div>
     </header>
@@ -983,6 +1097,66 @@
         <i class="fa fa-arrow-up text-lg"></i>
     </button>
     
+    <!-- ===== Travel overlay page: only rendered when the Travel tab is clicked ===== -->
+    <div id="travel" class="travel-overlay" role="dialog" aria-modal="true" aria-label="Travel" aria-hidden="true">
+        <button type="button" class="travel-close" aria-label="Close Travel" onclick="closeTravel()"><i class="fa fa-times"></i></button>
+
+        <div class="travel-sheet">
+            <div class="travel-kicker">
+                <span class="travel-rule"></span><b>Travel</b><span class="travel-rule"></span>
+            </div>
+
+            <p class="travel-lead">I’ve always believed that travel brings us closer to ourselves. Research is how I make that journey: across an ocean of thought, into conversation with minds across centuries, and through conferences, into the world. The curiosity that draws me to the hopes and disappointments hidden in old papers also makes me linger before a statue, imagining the thoughts and lives of those who shaped it.</p>
+
+            <svg class="travel-ornament" viewBox="0 0 132 11" aria-hidden="true" focusable="false">
+                <path d="M0 5.5H54M78 5.5H132" stroke="#c8d2dc" stroke-width="1" fill="none"/>
+                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#1e40af" stroke-width="1"/>
+                <circle cx="66" cy="5.5" r="1.1" fill="#1e40af"/>
+            </svg>
+
+            <blockquote class="travel-poem">
+                <p>And the end of all our exploring<br>Will be to arrive where we started<br>And know the place for the first time.</p>
+                <cite>— T. S. Eliot, <em>Little Gidding</em></cite>
+            </blockquote>
+
+            <svg class="travel-ornament" viewBox="0 0 132 11" aria-hidden="true" focusable="false">
+                <path d="M0 5.5H54M78 5.5H132" stroke="#c8d2dc" stroke-width="1" fill="none"/>
+                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#1e40af" stroke-width="1"/>
+                <circle cx="66" cy="5.5" r="1.1" fill="#1e40af"/>
+            </svg>
+
+            <p class="travel-coda">Research is also re-search for myself: returning to the familiar, and finding both it and ourselves anew.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Travel overlay: opens only on click, closes with button / Esc ---
+        function openTravel(event) {
+            if (event) event.preventDefault();
+            var panel = document.getElementById('travel');
+            if (!panel) return;
+            panel.classList.add('is-open');
+            panel.setAttribute('aria-hidden', 'false');
+            panel.scrollTop = 0;
+            document.body.style.overflow = 'hidden';
+            if (window.history && history.replaceState) history.replaceState(null, '', '#travel');
+        }
+        function closeTravel() {
+            var panel = document.getElementById('travel');
+            if (!panel) return;
+            panel.classList.remove('is-open');
+            panel.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' || e.key === 'Esc') closeTravel();
+        });
+        window.addEventListener('DOMContentLoaded', function () {
+            if (window.location.hash === '#travel') openTravel();
+        });
+    </script>
+
     <!-- Hidden images for Viewer.js -->
     <div id="comic-viewer-container" class="hidden">
         <img id="comic-main-image" src="https://cdn.metaiot.group/metaiot/image/huixin/gpsoil.jpg" alt="GPSoil Explanation" referrerpolicy="no-referrer">
