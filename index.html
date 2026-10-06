@@ -490,35 +490,20 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .travel-kicker {
-            display: flex;
-            align-items: center;
-            gap: 1.1rem;
+            margin: 0 0 clamp(2rem, 5vh, 2.8rem);
             font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: clamp(1.05rem, 1.6vw, 1.3rem);
-            font-weight: 500;
-            letter-spacing: .42em;
-            text-transform: uppercase;
+            font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+            font-weight: 600;
+            letter-spacing: 0;
+            text-align: center;
             color: #1e40af;
-            margin-bottom: clamp(2.2rem, 6vh, 3.4rem);
         }
-        .travel-kicker .travel-rule { flex: 1; height: 1px; }
-        .travel-kicker .travel-rule:first-child { background: linear-gradient(90deg, rgba(30, 64, 175, 0), rgba(30, 64, 175, .45)); }
-        .travel-kicker .travel-rule:last-child { background: linear-gradient(90deg, rgba(30, 64, 175, .45), rgba(30, 64, 175, 0)); }
-        .travel-kicker b { font-weight: 500; padding-left: .42em; }
         .travel-lead {
             font-family: 'Cormorant Garamond', Georgia, serif;
             font-size: clamp(1.15rem, 1.75vw, 1.45rem);
             line-height: 1.95;
             color: #27303c;
             margin: 0;
-        }
-        .travel-lead::first-letter {
-            float: left;
-            font-size: 3.5em;
-            line-height: .78;
-            font-weight: 500;
-            color: #1e40af;
-            padding: .06em .1em 0 0;
         }
         .travel-ornament { display: block; width: 132px; height: 11px; margin: clamp(2.4rem, 6vh, 3.6rem) auto; }
         .travel-poem { margin: 0; padding: 0; border: 0; text-align: center; }
@@ -532,11 +517,10 @@
         }
         .travel-poem cite {
             display: block;
-            font-family: 'Inter', system-ui, sans-serif;
-            font-style: normal;
-            font-size: .72rem;
-            letter-spacing: .18em;
-            text-transform: uppercase;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-size: 1rem;
+            letter-spacing: 0;
             color: #6b7683;
         }
         .travel-coda {
@@ -1102,9 +1086,7 @@
         <button type="button" class="travel-close" aria-label="Close Travel" onclick="closeTravel()"><i class="fa fa-times"></i></button>
 
         <div class="travel-sheet">
-            <div class="travel-kicker">
-                <span class="travel-rule"></span><b>Travel</b><span class="travel-rule"></span>
-            </div>
+            <p class="travel-kicker">Travel</p>
 
             <p class="travel-lead">I’ve always believed that travel brings us closer to ourselves. Research is how I make that journey: across an ocean of thought, into conversation with minds across centuries, and through conferences, into the world. The curiosity that draws me to the hopes and disappointments hidden in old papers also makes me linger before a statue, imagining the thoughts and lives of those who shaped it.</p>
 
