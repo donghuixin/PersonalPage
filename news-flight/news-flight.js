@@ -221,7 +221,7 @@ function makeAudio() {
 // ------------------------------------------------------------------------------------------
 // The game
 // ------------------------------------------------------------------------------------------
-export async function start(stage, { news, onExit }) {
+export async function start(stage, { news, onExit, reducedMotion = false }) {
   await ensureCss();
   const touch = matchMedia('(pointer: coarse)').matches;
   const lowPower = touch || (navigator.hardwareConcurrency || 8) <= 4;
@@ -484,7 +484,7 @@ export async function start(stage, { news, onExit }) {
     const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex, color: b.color, transparent: true, depthWrite: false, fog: false }));
     ring.position.copy(p); ring.scale.setScalar(0.5); scene.add(ring);
     rings.push({ s: ring, t: 0 });
-    st.slowmo = 0.45;
+    if (!reducedMotion) st.slowmo = 0.45;
     showCard(b);
     if (st.got === total) setTimeout(() => { if (!disposed) showDone(); }, 1600);
   };
@@ -630,7 +630,7 @@ export async function start(stage, { news, onExit }) {
     camPos.x = damp(camPos.x, tmp.x, 6, dt); camPos.y = damp(camPos.y, tmp.y, 5, dt); camPos.z = damp(camPos.z, tmp.z, 6, dt);
     camera.position.copy(camPos);
     camera.lookAt(st.pos.x - Math.sin(st.yaw) * 9, st.pos.y + 0.9 + st.pitch * 3, st.pos.z - Math.cos(st.yaw) * 9);
-    camera.rotateZ(-st.roll * 0.12);
+    if (!reducedMotion) camera.rotateZ(-st.roll * 0.12);
     const fov = 60 + speedK * 16;
     if (Math.abs(camera.fov - fov) > 0.05) { camera.fov = damp(camera.fov, fov, 3, dt); camera.updateProjectionMatrix(); }
 
@@ -665,7 +665,7 @@ export async function start(stage, { news, onExit }) {
     renderer.setRenderTarget(rt);
     renderer.render(scene, camera);
     renderer.setRenderTarget(null);
-    post.mat.uniforms.uSpeed.value = damp(post.mat.uniforms.uSpeed.value, playing ? speedK : 0, 4, dt);
+    post.mat.uniforms.uSpeed.value = damp(post.mat.uniforms.uSpeed.value, playing && !reducedMotion ? speedK : 0, 4, dt);
     renderer.render(post.scene, post.cam);
   };
 

@@ -591,6 +591,16 @@
         .news-play-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; text-align: left; }
         .news-play-text b { font-size: .8rem; font-weight: 700; letter-spacing: .18em; }
         .news-play-text small { font-size: .68rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+        .news-note {
+            position: absolute; right: 1rem; bottom: 4.4rem; z-index: 4; max-width: min(420px, calc(100% - 2rem));
+            padding: .8rem 2.2rem .85rem 1rem; border-radius: 14px; font-size: .82rem; line-height: 1.5; color: var(--ink-2);
+            background: rgba(255, 252, 246, .94);
+            -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+            border: 1px solid var(--line); box-shadow: 0 16px 36px -18px rgba(20, 25, 42, .45);
+        }
+        .news-note b { color: var(--ink); font-weight: 600; }
+        .news-note-x { position: absolute; top: .35rem; right: .5rem; width: 1.6rem; height: 1.6rem; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 1.1rem !important; line-height: 1; }
+        .news-note-x:hover { color: var(--ink); }
         .news-stage.is-playing { overflow: hidden; }
         .news-stage.is-playing .news-list { visibility: hidden; }
         .news-stage.is-playing .news-veil, .news-stage.is-playing .news-play { display: none; }
@@ -1343,9 +1353,25 @@
             var stage = document.getElementById('news-stage');
             var btn = document.getElementById('news-play');
             if (!stage || !btn) return;
-            var ok = false;
-            try { ok = !!document.createElement('canvas').getContext('webgl2'); } catch (e) { ok = false; }
-            if (!ok || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            var glOk = false;
+            try {
+                var probe = document.createElement('canvas').getContext('webgl2');
+                glOk = !!probe;
+                var lose = probe && probe.getExtension('WEBGL_lose_context');
+                if (lose) lose.loseContext();
+            } catch (e) { glOk = false; }
+            var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var note = null;
+            function showNote(html) {
+                if (!note) {
+                    note = document.createElement('div');
+                    note.className = 'news-note';
+                    note.setAttribute('role', 'status');
+                    stage.appendChild(note);
+                }
+                note.innerHTML = html + '<button type="button" class="news-note-x" aria-label="Dismiss">&times;</button>';
+                note.querySelector('.news-note-x').addEventListener('click', function () { note.remove(); note = null; btn.focus(); });
+            }
             btn.hidden = false;
             stage.classList.add('has-play');
             var game = null, busy = false;
@@ -1360,6 +1386,12 @@
             }
             btn.addEventListener('click', function () {
                 if (busy || game) return;
+                if (!glOk) {
+                    showNote('<b>This browser has WebGL&nbsp;2 turned off, so the game can’t start.</b> ' +
+                        'In Chrome or Edge, open <i>Settings → System</i>, switch on <i>“Use graphics acceleration when available”</i> and relaunch. ' +
+                        'Firefox and Safari 15+ support it out of the box. The news above is all here either way.');
+                    return;
+                }
                 busy = true;
                 var news = Array.prototype.map.call(stage.querySelectorAll('.news-list > div'), function (row) {
                     return { date: row.children[0].textContent.trim(), html: row.children[1].innerHTML.replace(/^\s*(?:🎉\s*)+/, '').trim() };
@@ -1370,7 +1402,7 @@
                 var top = stage.getBoundingClientRect().top + window.scrollY - 84;
                 if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: 'smooth' });
                 import('./news-flight/news-flight.js')
-                    .then(function (m) { return m.start(stage, { news: news, onExit: close }); })
+                    .then(function (m) { return m.start(stage, { news: news, onExit: close, reducedMotion: reducedMotion }); })
                     .then(function (g) { game = g; busy = false; })
                     .catch(function (err) { console.error('News Flight failed to start', err); var r = stage.querySelector('.nf-root'); if (r) r.remove(); busy = false; close(); });
             });
