@@ -37,14 +37,7 @@
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => {
                 btn.setAttribute('aria-pressed', String(btn.id === `btn-${type}`));
-                btn.classList.remove('bg-[#b8914d]', 'text-white', 'shadow-md');
-                btn.classList.add('glass-btn-inactive', 'text-gray-700');
             });
-            const activeBtn = document.getElementById(`btn-${type}`);
-            if(activeBtn) {
-                activeBtn.classList.remove('glass-btn-inactive', 'text-gray-700');
-                activeBtn.classList.add('bg-[#b8914d]', 'text-white', 'shadow-md');
-            }
         }
 
         // --- 2. 移动端菜单 ---
@@ -143,47 +136,35 @@
             .text-shadow-sm { text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
             .scroll-mt-20 { scroll-margin-top: 5rem; }
             
-            /* --- Apple UI Glassmorphism 升级版 (渐变+毛玻璃) --- */
+            /* --- Surfaces: solid paper cards with hairline borders --- */
             .glass-panel {
-                background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(245, 247, 250, 0.3));
-                backdrop-filter: blur(25px);
-                -webkit-backdrop-filter: blur(25px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+                background-color: rgba(250, 249, 246, 0.86);
+                backdrop-filter: saturate(160%) blur(14px);
+                -webkit-backdrop-filter: saturate(160%) blur(14px);
+                border-bottom: 1px solid var(--line);
             }
 
             .glass-card {
-                background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.35);
-                box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-                transition: all 0.3s ease;
+                background-color: var(--surface);
+                border: 1px solid var(--line);
+                box-shadow: 0 1px 2px rgba(20, 25, 42, 0.04);
+                transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
             }
             .glass-card:hover {
-                background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35));
-                box-shadow: 0 8px 28px rgba(0,0,0,0.06);
-                transform: translateY(-2px);
-                border-color: rgba(255, 255, 255, 0.5);
+                border-color: var(--line-strong);
+                box-shadow: 0 10px 28px -12px rgba(20, 25, 42, 0.16);
+                transform: translateY(-1px);
             }
 
             .glass-sidebar {
-                background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.2));
-                backdrop-filter: blur(30px);
-                -webkit-backdrop-filter: blur(30px);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+                background-color: var(--surface);
+                border: 1px solid var(--line);
+                box-shadow: 0 1px 2px rgba(20, 25, 42, 0.04), 0 18px 40px -24px rgba(20, 25, 42, 0.18);
             }
 
             .glass-btn-inactive {
-                background-image: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,255,255,0.3);
+                background: transparent;
                 transition: all 0.2s;
-            }
-            .glass-btn-inactive:hover {
-                background-image: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
-                border-color: rgba(255,255,255,0.5);
             }
 
             /* --- 折页效果 CSS --- */
@@ -266,7 +247,7 @@
                 bottom: 10px;
                 right: 8px;
                 font-size: 10px;
-                color: #9a7430;
+                color: #80602a;
                 font-weight: bold;
                 z-index: 23;
                 opacity: 0.6; 
@@ -293,10 +274,30 @@
             height: auto;
         }
 
+        :root {
+            --paper: #f6f4ef;
+            --surface: #ffffff;
+            --ink: #161b28;
+            --ink-2: #3d4454;
+            --muted: #6e7480;
+            --line: #e7e2d8;
+            --line-strong: #d6cfc1;
+            --navy: #1d2a46;
+            --gold: #a47a35;
+            --gold-deep: #80602a;
+            --gold-soft: #f5eedf;
+            --gutter: clamp(1.25rem, 2.2vw, 2.5rem);
+            --sbw: clamp(280px, 18vw, 340px);
+            --header-h: 4rem;
+        }
+
         body {
             font-family: 'Inter', 'Noto Sans SC', sans-serif;
-            background: radial-gradient(circle at 20% 20%, #fefffe, #f4f6f7 60%, #eceef0);
-            color: #1d1d1f;
+            background:
+                radial-gradient(900px 480px at 0% 0%, rgba(164, 122, 53, 0.06), transparent 70%),
+                var(--paper);
+            background-attachment: fixed;
+            color: var(--ink);
             padding-top: 4rem;
             line-height: 1.6;
             margin: 0;
@@ -307,23 +308,27 @@
             overscroll-behavior-y: none;
         }
         
-        .nav-link { position: relative; font-size: 0.82rem !important; }
+        header > .container { max-width: none; padding-left: var(--gutter) !important; padding-right: var(--gutter) !important; }
+        .site-brand span { font-family: 'Cormorant Garamond', Georgia, 'Noto Sans SC', serif; font-weight: 500 !important; color: var(--ink) !important; letter-spacing: 0 !important; }
+        .nav-link { position: relative; font-size: 0.76rem !important; letter-spacing: .06em !important; color: var(--ink-2) !important; padding: .35rem .15rem; transition: color .2s ease; }
         .nav-link::after {
-            content: ''; position: absolute; width: 0; height: 2px;
-            bottom: -2px; left: 0; background-color: #b8914d;
-            transition: width 0.3s ease;
+            content: ''; position: absolute; height: 1px;
+            bottom: 0; left: 50%; right: 50%; background-color: var(--gold);
+            transition: left .3s ease, right .3s ease;
         }
-        .nav-link:hover::after { width: 100%; }
+        .nav-link:hover, .nav-link.is-active { color: var(--ink) !important; }
+        .nav-link:hover::after, .nav-link.is-active::after { left: 0; right: 0; }
 
         /* --- 侧边栏布局 --- */
         .sidebar {
             position: fixed; 
-            top: 5rem; 
-            left: clamp(1rem, 2vw, 2rem); 
-            height: calc(100vh - 6rem); 
-            width: clamp(280px, 18vw, 360px);
-            border-radius: 24px;
-            padding: clamp(1.5rem, 2vw, 2.5rem);
+            top: calc(var(--header-h) + var(--gutter));
+            left: var(--gutter);
+            height: auto;
+            max-height: calc(100vh - var(--header-h) - 2 * var(--gutter));
+            width: var(--sbw);
+            border-radius: 20px;
+            padding: clamp(1.6rem, 2vw, 2.4rem) clamp(1.5rem, 1.8vw, 2.2rem);
             z-index: 40;
             box-sizing: border-box;
             display: flex;
@@ -339,15 +344,48 @@
             flex: 0 0 auto;
             width: 100%; display: flex; flex-direction: column;
             align-items: center; text-align: center;
-            margin-bottom: 1rem;
         }
         .sidebar-info { width: 100%; }
 
+        /* --- Sidebar profile --- */
+        .sidebar-avatar { margin-bottom: 1.25rem; }
+        .avatar-img {
+            display: block; width: 7.5rem; height: 9.1rem; object-fit: cover; object-position: center 30%;
+            border-radius: 14px; background: #eae6de;
+            box-shadow: 0 0 0 1px rgba(20,25,42,.06), 0 0 0 5px var(--surface), 0 0 0 6px var(--line), 0 14px 30px -14px rgba(20,25,42,.35);
+            transition: transform .3s ease;
+        }
+        .avatar-img:hover { transform: translateY(-2px); }
+        .sb-name {
+            font-family: 'Cormorant Garamond', Georgia, serif !important;
+            font-size: 2.05rem !important; font-weight: 600; line-height: 1.05;
+            color: var(--ink); margin: 0 0 .5rem; letter-spacing: -.01em;
+        }
+        .sb-name-zh { display: block; margin-top: .2rem; font-family: 'Noto Sans SC', 'Inter', sans-serif; font-size: .85rem; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+        .sb-role { margin: 0; font-size: .74rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-deep); }
+        .sb-affil { margin: .35rem 0 0; font-size: .9rem; line-height: 1.4; color: var(--ink-2); }
+        .sb-contact { list-style: none; margin: 1.1rem 0 0; padding: 1.1rem 0 0; border-top: 1px solid var(--line); display: grid; gap: .5rem; width: 100%; justify-content: center; }
+        .sb-contact li { display: flex; align-items: center; gap: .65rem; text-align: left; font-size: .86rem; color: var(--ink-2); min-width: 0; }
+        .sb-contact i { flex: 0 0 1.75rem; height: 1.75rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--paper); color: var(--gold-deep); font-size: .8rem; }
+        .sb-contact a { color: inherit; overflow-wrap: anywhere; text-decoration: none; background-image: linear-gradient(var(--gold), var(--gold)); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size .25s ease, color .2s ease; }
+        .sb-contact a:hover { color: var(--ink); background-size: 100% 1px; }
+        .sb-block { margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
+        .sb-label { display: flex; align-items: center; justify-content: center; gap: .55rem; margin: 0 0 .65rem; font-size: .7rem !important; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        .sb-label::before, .sb-label::after { content: ''; width: 1.1rem; height: 1px; background: var(--gold); }
+        .sb-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+        .sb-tag { padding: .24rem .62rem; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); font-size: .74rem; font-weight: 500; color: var(--ink-2); line-height: 1.3; transition: border-color .2s, color .2s, background .2s; }
+        .sb-tag:hover { border-color: var(--gold); color: var(--gold-deep); background: var(--gold-soft); }
+        .sb-social { display: flex; justify-content: center; gap: .5rem; margin-top: 1.1rem; }
+        .sb-social a { width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--ink-2); font-size: .95rem; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+        .sb-social a:hover { background: var(--navy); border-color: var(--navy); color: #fff; transform: translateY(-1px); }
+        .sb-rg { font-family: Georgia, serif; font-weight: 700; font-size: .85rem; line-height: 1; }
+        .sb-rg span { font-size: .8em; }
+
         .main-content {
-            margin-left: clamp(320px, 22vw, 400px);
+            margin-left: calc(var(--gutter) + var(--sbw));
             flex-grow: 1;
-            padding: clamp(1.5rem, 2vw, 2.5rem);
-            max-width: calc(100vw - clamp(320px, 22vw, 400px));
+            padding: var(--gutter);
+            max-width: calc(100vw - var(--gutter) - var(--sbw));
             box-sizing: border-box;
             margin-bottom: 0; 
         }
@@ -358,7 +396,7 @@
             font-size: 0.85rem; 
             color: #9ca3af; 
             width: auto;
-            margin-left: clamp(320px, 22vw, 400px); 
+            margin-left: calc(var(--gutter) + var(--sbw)); 
         }
 
         @media (max-width: 1200px) { 
@@ -368,28 +406,36 @@
             .sidebar {
                 position: static; height: auto; width: 100%;
                 border-right: none; border-bottom: 1px solid #e5e7eb;
-                padding: clamp(1.5rem, 2vw, 2rem);
+                padding: 1.75rem var(--gutter);
                 top: 4rem;
                 margin: 0;
                 border-radius: 0;
-                background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)); 
+                max-height: none;
                 overflow: visible; 
             }
-            .main-content { margin-left: 0; padding: clamp(1.5rem, 2vw, 2rem); max-width: 100vw; }
+            .main-content { margin-left: 0; padding: var(--gutter); max-width: 100vw; }
             .sidebar-inner {
-                flex-direction: row; justify-content: center; align-items: center;
-                gap: clamp(1.5rem, 2vw, 2rem); max-width: 900px; margin: 0 auto;
+                flex-direction: row; justify-content: center; align-items: flex-start;
+                gap: clamp(1.5rem, 3vw, 2.5rem); max-width: 900px; margin: 0 auto;
             }
             .sidebar-info { text-align: left; flex: 1; }
             .sidebar-avatar { margin-bottom: 0 !important; }
+            .sidebar-inner { text-align: left; }
+            .sb-contact, .sb-tags, .sb-social, .sb-label { justify-content: flex-start; }
+            .sb-label::after { display: none; }
+            .sidebar.glass-sidebar { border: 0; border-bottom: 1px solid var(--line); box-shadow: none; border-radius: 0; }
             footer { margin-left: 0; }
         }
         @media (max-width: 640px) {
-            .sidebar-inner { flex-direction: column; text-align: center; gap: clamp(1rem, 2vw, 1.5rem); }
+            .sidebar-inner { flex-direction: column; text-align: left; gap: 1.25rem; }
             .sidebar-info { text-align: center; }
+            .avatar-img { width: 6.5rem; height: 7.9rem; }
+            .sidebar-inner { align-items: center; text-align: center; }
+            .sb-contact, .sb-tags, .sb-social, .sb-label { justify-content: center; }
+            .sb-label::after { display: block; }
             .pub-grid, .award-grid, .service-grid { grid-template-columns: 1fr !important; }
-            .main-content { padding: clamp(1rem, 2vw, 1.5rem); }
-            .sidebar { padding: clamp(1rem, 2vw, 1.5rem); width: 100%; }
+            .main-content { padding: var(--gutter); }
+            .sidebar { padding: 1.75rem var(--gutter); width: 100%; }
             .pub-actions a { margin-left: 0.5rem !important; }
             .mobile-nav-link { font-size: 1.1rem !important; }
         }
@@ -407,7 +453,7 @@
         }
         .pub-actions a { color: #86868b; transition: color 0.2s ease; margin-left: 1rem; }
         .pub-actions a:first-child { margin-left: 0; }
-        .pub-actions a:hover { color: #b8914d; }
+        .pub-actions a:hover { color: #a47a35; }
 
         h1 { font-size: 1.8rem !important; letter-spacing: -0.015em; font-family: 'Cormorant Garamond', Georgia, serif !important; }
         h2 { font-size: 1.6rem !important; letter-spacing: -0.015em; font-family: 'Cormorant Garamond', Georgia, serif !important; font-weight: 700 !important; }
@@ -426,7 +472,7 @@
             width: 1rem;
             height: 1rem;
             border-radius: 9999px;
-            background-color: #9a7430; 
+            background-color: #80602a; 
             border: 4px solid #f3f4f6; 
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
@@ -449,12 +495,49 @@
         .reviewer-list li + li { margin-top: .5rem; }
         .reviewer-list summary { display: flex; align-items: baseline; gap: .5rem; cursor: pointer; list-style: none; border-radius: 4px; }
         .reviewer-list summary::-webkit-details-marker { display: none; }
-        .reviewer-list summary::before { content: ''; flex: 0 0 .4rem; width: .4rem; height: .6rem; background: #b8914d; clip-path: polygon(0 0, 100% 50%, 0 100%); transition: transform .15s ease; }
+        .reviewer-list summary::before { content: ''; flex: 0 0 .4rem; width: .4rem; height: .6rem; background: #a47a35; clip-path: polygon(0 0, 100% 50%, 0 100%); transition: transform .15s ease; }
         .reviewer-list details[open] > summary::before { transform: rotate(90deg); }
-        .reviewer-list summary:hover { color: #b8914d; }
-        .reviewer-list summary:focus-visible { outline: 2px solid #b8914d; outline-offset: 4px; }
+        .reviewer-list summary:hover { color: #a47a35; }
+        .reviewer-list summary:focus-visible { outline: 2px solid #a47a35; outline-offset: 4px; }
         .reviewer-years { display: block; margin: .25rem 0 0 .9rem; color: #475569; font-size: .9em; }
-        a:focus-visible, button:focus-visible { outline: 2px solid #b8914d; outline-offset: 4px; }
+        a:focus-visible, button:focus-visible { outline: 2px solid #a47a35; outline-offset: 4px; }
+
+        /* --- Section headings --- */
+        .main-content section > h2 { color: var(--ink) !important; border-bottom-color: var(--line) !important; font-weight: 600 !important; }
+        .main-content section > h2 > i.fa {
+            width: 2rem; height: 2rem; flex: 0 0 2rem; display: inline-flex; align-items: center; justify-content: center;
+            margin-right: .8rem !important; border-radius: 9px; font-size: .95rem;
+            background: var(--gold-soft); color: var(--gold-deep) !important;
+        }
+
+        /* --- Publication filter: segmented control --- */
+        .seg-control { display: inline-flex; padding: 4px; gap: 2px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: inset 0 1px 2px rgba(20,25,42,.04); }
+        .seg-control .filter-btn {
+            padding: .45rem 1.05rem; border-radius: 999px; border: 0; background: transparent; cursor: pointer;
+            font-size: .82rem !important; font-weight: 500; letter-spacing: .01em; color: var(--muted);
+            transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+        }
+        .seg-control .filter-btn:hover { color: var(--ink); }
+        .seg-control .filter-btn[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 4px 12px -4px rgba(29,42,70,.45); }
+
+        /* --- Card accents: calmer tones, same meaning --- */
+        .pub-card.border-l-red-500 { border-left-color: #b43a3a !important; }
+        .pub-card.border-l-yellow-400 { border-left-color: var(--gold) !important; }
+        .pub-card.border-l-gray-400 { border-left-color: #c3c8d1 !important; }
+        .pub-card h3 { color: var(--ink) !important; }
+        .pub-actions a { font-size: .85rem; }
+        .pub-actions a:hover { color: var(--gold-deep) !important; }
+
+        /* --- Dates & small type --- */
+        .main-content .font-mono { font-family: 'Inter', sans-serif !important; font-variant-numeric: tabular-nums; letter-spacing: 0; color: var(--muted) !important; }
+        .talk-item-dot { border-color: var(--paper); background-color: var(--gold); }
+        .talk-item-dot.secondary { background-color: #cfd3da; border-color: var(--paper); }
+        .main-content .border-gray-200\/50 { border-color: var(--line) !important; }
+
+        /* --- Back to top --- */
+        #backToTop { background: var(--navy) !important; box-shadow: 0 10px 24px -10px rgba(29,42,70,.55) !important; width: 2.75rem; height: 2.75rem; }
+        #backToTop:hover { background: #131d33 !important; transform: translateY(-2px) !important; }
+        #mobile-menu { background: rgba(250,249,246,.97) !important; border-color: var(--line) !important; }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
             *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -496,7 +579,7 @@
             font-weight: 600;
             letter-spacing: 0;
             text-align: center;
-            color: #b8914d;
+            color: #a47a35;
         }
         .travel-lead {
             font-family: 'Cormorant Garamond', Georgia, serif;
@@ -547,12 +630,12 @@
             background: rgba(255, 255, 255, .82);
             -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
-            color: #b8914d;
+            color: #a47a35;
             font-size: .95rem;
             cursor: pointer;
             transition: background .25s ease, border-color .25s ease, transform .25s ease, color .25s ease;
         }
-        .travel-close:hover { background: #b8914d; border-color: #b8914d; color: #fff; transform: translateY(-1px); }
+        .travel-close:hover { background: #a47a35; border-color: #a47a35; color: #fff; transform: translateY(-1px); }
         @media (max-width: 640px) {
             .travel-lead { line-height: 1.8; }
             .travel-close { top: .7rem; right: .7rem; width: 2.3rem; height: 2.3rem; }
@@ -564,22 +647,22 @@
     <header class="fixed top-0 left-0 right-0 h-16 glass-panel z-50 border-b-0">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <a href="#" class="flex items-center hover:opacity-80 transition">
+                <a href="#" class="site-brand flex items-center hover:opacity-80 transition">
                     <span class="text-2xl font-bold text-gray-900 hidden sm:inline-block tracking-tight">Huixin Dong (董慧鑫)</span>
                     <span class="text-xl font-bold text-gray-900 sm:hidden">H. Dong</span>
                 </a>
-                <nav class="hidden xl:flex space-x-4">
-                    <a href="#research" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Overview</a>
-                    <a href="#news" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">News</a>
-                    <a href="#publications" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Publications</a>
-                    <a href="#awards" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Awards</a>
-                    <a href="#services" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Services</a>
-                    <a href="#talks" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Talks</a>
-                    <a href="#experience" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Experience</a>
-                    <a href="#travel" onclick="openTravel(event)" class="nav-link text-gray-600 hover:text-[#b8914d] font-medium uppercase tracking-wide text-xs">Travel</a>
+                <nav class="hidden xl:flex space-x-5">
+                    <a href="#research" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Overview</a>
+                    <a href="#news" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">News</a>
+                    <a href="#publications" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Publications</a>
+                    <a href="#awards" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Awards</a>
+                    <a href="#services" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Services</a>
+                    <a href="#talks" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Talks</a>
+                    <a href="#experience" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Experience</a>
+                    <a href="#travel" onclick="openTravel(event)" class="nav-link text-gray-600 hover:text-[#a47a35] font-medium uppercase tracking-wide text-xs">Travel</a>
                 </nav>
                 <div class="xl:hidden">
-                    <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMobileMenu()" class="text-gray-600 hover:text-[#b8914d] focus:outline-none p-1">
+                    <button id="mobile-menu-toggle" aria-label="Toggle navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMobileMenu()" class="text-gray-600 hover:text-[#a47a35] focus:outline-none p-1">
                         <i class="fa fa-bars text-lg"></i>
                     </button>
                 </div>
@@ -587,56 +670,53 @@
         </div>
         <div id="mobile-menu" class="hidden xl:hidden bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg absolute w-full left-0 top-16">
             <nav class="flex flex-col p-3 space-y-2">
-                <a href="#research" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Overview</a>
-                <a href="#news" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">News</a>
-                <a href="#publications" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Publications</a>
-                <a href="#awards" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Awards</a>
-                <a href="#services" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Services</a>
-                <a href="#talks" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Talks</a>
-                <a href="#experience" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Experience</a>
-                <a href="#travel" onclick="toggleMobileMenu(); openTravel(event);" class="block text-gray-700 hover:text-[#b8914d] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Travel</a>
+                <a href="#research" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Overview</a>
+                <a href="#news" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">News</a>
+                <a href="#publications" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Publications</a>
+                <a href="#awards" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Awards</a>
+                <a href="#services" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Services</a>
+                <a href="#talks" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Talks</a>
+                <a href="#experience" onclick="toggleMobileMenu()" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Experience</a>
+                <a href="#travel" onclick="toggleMobileMenu(); openTravel(event);" class="block text-gray-700 hover:text-[#a47a35] hover:bg-gray-50 px-3 py-2 rounded-md font-medium mobile-nav-link">Travel</a>
             </nav>
         </div>
     </header>
 
     <aside class="sidebar glass-sidebar">
         <div class="sidebar-inner">
-            <div class="sidebar-avatar mb-4 lg:mb-5">
+            <div class="sidebar-avatar">
                 <img 
                     id="avatar-img"
                     src="/images/avatar.png"
                     alt="Huixin Dong" 
-                    class="w-36 h-36 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl object-cover bg-gray-200 motion-safe:transition-all duration-200 motion-safe:hover:scale-105"
+                    class="avatar-img"
                 >
             </div>
             <div class="sidebar-info">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2" style="font-family:'Cormorant Garamond', Georgia, serif;">Huixin Dong <span class="block whitespace-nowrap text-base font-normal text-gray-500">(董慧鑫)</span></h1>
-                <p class="text-lg text-[#b8914d] font-medium mb-3">Postdoctoral Researcher</p>
-                <p class="text-gray-600 mb-4 text-sm leading-tight">The Hong Kong University of Science and Technology (HKUST)</p>
-                <div class="space-y-3 mb-4 text-sm text-gray-600">
-                    <div class="flex items-center lg:justify-center justify-start">
-                        <i class="fa fa-envelope text-[#b8914d] w-6 text-center mr-2"></i>
-                        <a href="mailto:csedxhuixin@ust.hk" class="hover:text-[#b8914d] hover:underline transition text-sm">csedxhuixin [at] ust.hk</a>
-                    </div>
-                    <div class="flex items-center lg:justify-center justify-start">
-                        <i class="fa fa-map-marker text-[#b8914d] w-6 text-center mr-2"></i>
-                        <span class="text-sm">Hong Kong, China</span>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 mb-3"><a href="mailto:dxhuixin@gmail.com" class="hover:text-[#b8914d] hover:underline">dxhuixin@gmail.com</a></p>
-                <div class="mb-4">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Research Interests</h3>
-                    <div class="flex flex-wrap gap-2 lg:justify-center justify-start">
-                        <span class="bg-[#f7efe0]/60 text-[#9a7430] px-3 py-1 rounded-full border border-[#e5d3ab]/50 text-sm font-semibold backdrop-blur-sm">Backscatter</span>
-                        <span class="bg-[#f7efe0]/60 text-[#9a7430] px-3 py-1 rounded-full border border-[#e5d3ab]/50 text-sm font-semibold backdrop-blur-sm">Wireless Sensing</span>
-                        <span class="bg-[#f7efe0]/60 text-[#9a7430] px-3 py-1 rounded-full border border-[#e5d3ab]/50 text-sm font-semibold backdrop-blur-sm">Low-Power IoT</span>
+                <h1 class="sb-name">Huixin Dong <span class="sb-name-zh">(董慧鑫)</span></h1>
+                <p class="sb-role">Postdoctoral Researcher</p>
+                <p class="sb-affil">The Hong Kong University of Science and Technology (HKUST)</p>
+
+                <ul class="sb-contact">
+                    <li><i class="fa fa-envelope-o" aria-hidden="true"></i><a href="mailto:csedxhuixin@ust.hk">csedxhuixin [at] ust.hk</a></li>
+                    <li><i class="fa fa-paper-plane-o" aria-hidden="true"></i><a href="mailto:dxhuixin@gmail.com">dxhuixin@gmail.com</a></li>
+                    <li><i class="fa fa-map-marker" aria-hidden="true"></i><span>Hong Kong, China</span></li>
+                </ul>
+
+                <div class="sb-block">
+                    <h3 class="sb-label">Research Interests</h3>
+                    <div class="sb-tags">
+                        <span class="sb-tag">Backscatter</span>
+                        <span class="sb-tag">Wireless Sensing</span>
+                        <span class="sb-tag">Low-Power IoT</span>
                     </div>
                 </div>
-                <div class="flex space-x-4 lg:justify-center justify-start mt-3">
-                    <a href="https://scholar.google.com/citations?user=5XROK7EAAAAJ" class="text-gray-400 hover:text-[#b8914d] transition transform hover:scale-110" title="Google Scholar"><i class="fa fa-google text-xl"></i></a>
-                    <a href="https://github.com/donghuixin" class="text-gray-400 hover:text-black transition transform hover:scale-110" title="GitHub"><i class="fa fa-github text-xl"></i></a>
-                    <a href="https://es.linkedin.com/in/huixin-dong-80220a294" class="text-gray-400 hover:text-[#b8914d] transition transform hover:scale-110" title="LinkedIn"><i class="fa fa-linkedin text-xl"></i></a>
-                    <a href="https://www.researchgate.net/scientific-contributions/Huixin-Dong-2299262092" class="text-gray-400 hover:text-green-600 transition transform hover:scale-110" title="ResearchGate"><span class="font-bold font-serif text-lg leading-none" style="position:relative; top:1px;">R<span style="font-size:0.8em">G</span></span></a>
+
+                <div class="sb-social">
+                    <a href="https://scholar.google.com/citations?user=5XROK7EAAAAJ" title="Google Scholar" aria-label="Google Scholar"><i class="fa fa-google"></i></a>
+                    <a href="https://github.com/donghuixin" title="GitHub" aria-label="GitHub"><i class="fa fa-github"></i></a>
+                    <a href="https://es.linkedin.com/in/huixin-dong-80220a294" title="LinkedIn" aria-label="LinkedIn"><i class="fa fa-linkedin"></i></a>
+                    <a href="https://www.researchgate.net/scientific-contributions/Huixin-Dong-2299262092" title="ResearchGate" aria-label="ResearchGate"><span class="sb-rg">R<span>G</span></span></a>
                 </div>
             </div>
         </div>
@@ -646,12 +726,12 @@
         
         <section id="research" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-user-circle-o mr-3 text-[#b8914d]"></i>Overview
+                <i class="fa fa-user-circle-o mr-3 text-[#a47a35]"></i>Overview
             </h2>
             <div class="glass-card rounded-2xl p-6">
                 <p class="text-gray-700 leading-relaxed text-base">
-                    I am currently a Postdoctoral Researcher in the research group led by <a href="https://www.cse.ust.hk/~qianzh/" class="text-[#9a7430] hover:underline font-semibold transition">Prof. Qian Zhang</a> at The Hong Kong University of Science and Technology (HKUST). 
-                    Previously, I obtained my Ph.D. degree from Huazhong University of Science and Technology (HUST) in 2025, under the supervision of <a href="https://cs.whu.edu.cn/info/1019/55961.htm" class="text-[#9a7430] hover:underline font-semibold transition">Prof. Wei Wang</a> in the MetaIoT Lab.
+                    I am currently a Postdoctoral Researcher in the research group led by <a href="https://www.cse.ust.hk/~qianzh/" class="text-[#80602a] hover:underline font-semibold transition">Prof. Qian Zhang</a> at The Hong Kong University of Science and Technology (HKUST). 
+                    Previously, I obtained my Ph.D. degree from Huazhong University of Science and Technology (HUST) in 2025, under the supervision of <a href="https://cs.whu.edu.cn/info/1019/55961.htm" class="text-[#80602a] hover:underline font-semibold transition">Prof. Wei Wang</a> in the MetaIoT Lab.
                     <br><br>
                     My research interests primarily lie in <strong>Backscatter Networking</strong>, <strong>Wireless Sensing</strong>, and <strong>Low-Power IoT Systems</strong>. My work has appeared in <strong>top-tier conferences and journals</strong>.
                 </p>
@@ -660,7 +740,7 @@
 
         <section id="news" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-bullhorn mr-3 text-[#b8914d]"></i>News
+                <i class="fa fa-bullhorn mr-3 text-[#a47a35]"></i>News
             </h2>
             <div class="glass-card rounded-2xl p-6 space-y-3">
                     <div class="flex items-start">
@@ -669,7 +749,7 @@
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.06</span>
-                    <span class="text-gray-700 text-sm"> 🎉🎉 <a href="https://doi.org/10.1145/3831995" target="_blank" rel="noopener noreferrer" class="text-[#9a7430] hover:underline font-semibold transition">VESTA</a> is accepted by  <strong>UbiComp/IMWUT 2026</strong>, see you in Shanghai!</span>
+                    <span class="text-gray-700 text-sm"> 🎉🎉 <a href="https://doi.org/10.1145/3831995" target="_blank" rel="noopener noreferrer" class="text-[#80602a] hover:underline font-semibold transition">VESTA</a> is accepted by  <strong>UbiComp/IMWUT 2026</strong>, see you in Shanghai!</span>
                 </div>
                 <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.03</span>
@@ -708,12 +788,12 @@
 
         <section id="publications" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-file-text-o mr-3 text-[#b8914d]"></i>Publications
+                <i class="fa fa-file-text-o mr-3 text-[#a47a35]"></i>Publications
             </h2>
             <div class="flex flex-col sm:flex-row justify-between items-end mb-4">
-                <div class="flex flex-wrap gap-3">
-                    <button type="button" aria-pressed="true" id="btn-a" class="filter-btn bg-[#b8914d] text-white shadow-md px-4 py-2 rounded-full text-sm font-medium transition hover:opacity-90 backdrop-blur-sm" onclick="filterPublications('a')">Selected Publications</button>
-                    <button type="button" aria-pressed="false" id="btn-all" class="filter-btn glass-btn-inactive text-gray-700 px-4 py-2 rounded-full text-sm font-medium transition" onclick="filterPublications('all')">All Publications</button>
+                <div class="seg-control" role="group" aria-label="Filter publications">
+                    <button type="button" aria-pressed="true" id="btn-a" class="filter-btn" onclick="filterPublications('a')">Selected Publications</button>
+                    <button type="button" aria-pressed="false" id="btn-all" class="filter-btn" onclick="filterPublications('all')">All Publications</button>
                 </div>
                 <div class="text-xs text-gray-400 mt-2 sm:mt-0 italic tracking-wide">
                     Note: ‘*’ marks co-primary authors. “✉” marks the corresponding authors.
@@ -894,7 +974,7 @@
 
         <section id="awards" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-trophy mr-3 text-[#b8914d]"></i>Honors & Awards
+                <i class="fa fa-trophy mr-3 text-[#a47a35]"></i>Honors & Awards
             </h2>
             <div class="award-grid">
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
@@ -905,7 +985,7 @@
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-graduation-cap text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-graduation-cap text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">ACM SIGBED China Dissertation Award (优博)</h3>
                         <p class="text-gray-500 text-xs mt-1">2025.09 | ACM SIGBED</p>
@@ -919,32 +999,32 @@
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-plane text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-plane text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">ACM MobiCom Student Travel Grant</h3>
                         <p class="text-gray-500 text-xs mt-1">2024.10 | ACM MobiCom</p>
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-trophy text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-trophy text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">2nd Prize in Ubiquitous Intelligent Sensing Comp.</h3>
                         <p class="text-gray-500 text-xs mt-1">2024.10 | National Competition</p>
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-money text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-money text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">Huawei Postgraduate Scholarship</h3>
                         <p class="text-gray-500 text-xs mt-1">2024.09 | Huawei</p>
                     </div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0"><i class="fa fa-graduation-cap text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0"><i class="fa fa-graduation-cap text-base"></i></div>
                     <div><h3 class="font-bold text-gray-900 text-sm">“ZhiXing” Postgraduate Scholarship</h3><p class="text-gray-500 text-xs mt-1">2024.09 | HUST</p></div>
                 </div>
                 <div class="glass-card rounded-xl p-3 flex items-center transition hover:shadow-md">
-                    <div class="bg-[#f7efe0]/60 text-[#b8914d] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-star text-base"></i></div>
+                    <div class="bg-[#f7efe0]/60 text-[#a47a35] w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 backdrop-blur-sm"><i class="fa fa-star text-base"></i></div>
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">Student Academic Rising Star in HUST</h3>
                         <p class="text-gray-500 text-xs mt-1">2024.01 | HUST</p>
@@ -955,21 +1035,21 @@
 
         <section id="services" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-gavel mr-3 text-[#b8914d]"></i>Academic Services
+                <i class="fa fa-gavel mr-3 text-[#a47a35]"></i>Academic Services
             </h2>
             <div class="service-grid">
                 <div class="glass-card rounded-xl p-4 h-full">
-                    <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-users mr-2 text-[#9a7430]"></i>Conference Committee Member</h3>
+                    <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-users mr-2 text-[#80602a]"></i>Conference Committee Member</h3>
                     <ul class="space-y-2 text-base text-gray-700 service-item">
-                        <li class="flex items-start"><i class="fa fa-check text-[#b8914d] mt-0.5 mr-2 text-sm"></i><span>Technical Program Committee (TPC), <strong>ICPADS 2026</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-[#b8914d] mt-0.5 mr-2 text-sm"></i><span>Technical Program Committee (TPC), <strong>ACM EWSN 2027</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-[#b8914d] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiCom 2025, 2026</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-[#b8914d] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiSys 2024, 2025</strong></span></li>
-                        <li class="flex items-start"><i class="fa fa-check text-[#b8914d] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>SenSys 2024</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-[#a47a35] mt-0.5 mr-2 text-sm"></i><span>Technical Program Committee (TPC), <strong>ICPADS 2026</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-[#a47a35] mt-0.5 mr-2 text-sm"></i><span>Technical Program Committee (TPC), <strong>ACM EWSN 2027</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-[#a47a35] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiCom 2025, 2026</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-[#a47a35] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>MobiSys 2024, 2025</strong></span></li>
+                        <li class="flex items-start"><i class="fa fa-check text-[#a47a35] mt-0.5 mr-2 text-sm"></i><span>Artifact Evaluation, <strong>SenSys 2024</strong></span></li>
                     </ul>
                 </div>
                 <div class="glass-card rounded-xl p-4 h-full">
-                    <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-book mr-2 text-[#9a7430]"></i>Journal Reviewer</h3>
+                    <h3 class="font-bold text-gray-900 mb-3 text-base flex items-center service-item"><i class="fa fa-book mr-2 text-[#80602a]"></i>Journal Reviewer</h3>
                     <ul class="reviewer-list">
                         <li><details><summary>IEEE Transactions on Mobile Computing (TMC)</summary><span class="reviewer-years">2024, 2025, 2026</span></details></li>
                         <li><details><summary>IEEE Internet of Things Journal (IoT-J)</summary><span class="reviewer-years">2024, 2025</span></details></li>
@@ -985,7 +1065,7 @@
 
         <section id="talks" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-microphone mr-3 text-[#b8914d]"></i>Talks
+                <i class="fa fa-microphone mr-3 text-[#a47a35]"></i>Talks
             </h2>
             <div class="relative border-l-2 border-gray-200/50 ml-4 space-y-6 max-w-4xl">
                 <div class="ml-8 relative talk-item">
@@ -1002,7 +1082,7 @@
                         2025.11.30 | Zhengzhou, China <span class="mx-2 text-gray-300">|</span> Rising Star &amp; Best Dissertation Forum
                     </p>
                     <p class="text-sm text-gray-600 mt-1 italic">Low-Power, High-Performance Backscatter for RF Computing</p>
-                    <p class="text-sm mt-1"><a href="https://www.embedded-ai.org/2025/index.html" class="text-[#b8914d] hover:underline">Conference</a> <span class="text-gray-400">·</span> <a href="https://www.embedded-ai.org/2025/schedule.html" class="text-[#b8914d] hover:underline">Program</a></p>
+                    <p class="text-sm mt-1"><a href="https://www.embedded-ai.org/2025/index.html" class="text-[#a47a35] hover:underline">Conference</a> <span class="text-gray-400">·</span> <a href="https://www.embedded-ai.org/2025/schedule.html" class="text-[#a47a35] hover:underline">Program</a></p>
                 </div>
                 <div class="ml-8 relative talk-item">
                     <span class="talk-item-dot secondary"></span>
@@ -1018,7 +1098,7 @@
                         2025.08.24 | Dalian, China <span class="mx-2 text-gray-300">|</span> PCC Top Conference and Journal Paper Session
                     </p>
                     <p class="text-sm text-gray-600 mt-1 italic">GPSense: Passive Sensing with Pervasive GPS Signals</p>
-                    <p class="text-sm mt-1"><a href="https://hhme.ccf.org.cn/history/2025/PCC_top_paper.html" class="text-[#b8914d] hover:underline">Program</a></p>
+                    <p class="text-sm mt-1"><a href="https://hhme.ccf.org.cn/history/2025/PCC_top_paper.html" class="text-[#a47a35] hover:underline">Program</a></p>
                 </div>
                 <div class="ml-8 relative talk-item">
                     <span class="talk-item-dot secondary"></span>
@@ -1046,7 +1126,7 @@
 
         <section id="experience" class="mb-8 scroll-mt-20">
              <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-briefcase mr-3 text-[#b8914d]"></i>Experience
+                <i class="fa fa-briefcase mr-3 text-[#a47a35]"></i>Experience
             </h2>
             <div class="space-y-2">
                 <div class="flex flex-col md:flex-row gap-3 items-center">
@@ -1056,7 +1136,7 @@
                     <div class="md:w-3/4 glass-card rounded-lg p-2.5 w-full">
                         <h3 class="text-base font-bold text-gray-900 leading-snug">Postdoctoral Researcher</h3>
                         <div class="flex flex-col sm:flex-row sm:items-center mt-0.5 text-sm">
-                            <span class="text-[#b8914d] font-medium">The Hong Kong University of Science and Technology (HKUST)</span>
+                            <span class="text-[#a47a35] font-medium">The Hong Kong University of Science and Technology (HKUST)</span>
                             <span class="hidden sm:inline mx-2 text-gray-400">|</span>
                             <span class="text-gray-600">Supervisor: Prof. Qian Zhang</span>
                         </div>
@@ -1069,7 +1149,7 @@
                     <div class="md:w-3/4 glass-card rounded-lg p-2.5 w-full">
                         <h3 class="text-base font-bold text-gray-900 leading-snug">Research Assistant</h3>
                         <div class="flex flex-col sm:flex-row sm:items-center mt-0.5 text-sm">
-                            <span class="text-[#b8914d] font-medium">Wuhan University</span>
+                            <span class="text-[#a47a35] font-medium">Wuhan University</span>
                             <span class="hidden sm:inline mx-2 text-gray-400">|</span>
                             <span class="text-gray-600">Advisor: Prof. Wei Wang</span>
                         </div>
@@ -1082,7 +1162,7 @@
                     <div class="md:w-3/4 glass-card rounded-lg p-2.5 w-full">
                         <h3 class="text-base font-bold text-gray-900 leading-snug">Research Intern</h3>
                         <div class="flex flex-col sm:flex-row sm:items-center mt-0.5 text-sm">
-                            <span class="text-[#b8914d] font-medium">Peng Cheng Laboratory</span>
+                            <span class="text-[#a47a35] font-medium">Peng Cheng Laboratory</span>
                             <span class="hidden sm:inline mx-2 text-gray-400">|</span>
                             <span class="text-gray-600">Mentor: Qianyi Huang</span>
                         </div>
@@ -1093,7 +1173,7 @@
 
         <section id="visitors" class="mb-8 scroll-mt-20">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
-                <i class="fa fa-globe mr-3 text-[#b8914d]"></i>Global Visitors Map
+                <i class="fa fa-globe mr-3 text-[#a47a35]"></i>Global Visitors Map
             </h2>
             <div class="glass-card rounded-2xl p-6 flex justify-center">
                 <div class="w-1/3 shrink-0">
@@ -1108,7 +1188,7 @@
         <p>© 2026 Huixin Dong. All rights reserved. <span class="mx-2 text-gray-300">|</span> Last updated: Sep. 28, 2026</p>
     </footer>
 
-    <button aria-label="Back to top" id="backToTop" class="fixed bottom-6 right-6 bg-[#b8914d]/90 backdrop-blur-sm text-white w-12 h-12 rounded-full shadow-xl hidden items-center justify-center hover:bg-[#9a7430] transition z-50 transform hover:scale-110" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <button aria-label="Back to top" id="backToTop" class="fixed bottom-6 right-6 bg-[#a47a35]/90 backdrop-blur-sm text-white w-12 h-12 rounded-full shadow-xl hidden items-center justify-center hover:bg-[#80602a] transition z-50 transform hover:scale-110" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="fa fa-arrow-up text-lg"></i>
     </button>
     
@@ -1123,8 +1203,8 @@
 
             <svg class="travel-ornament" viewBox="0 0 132 11" aria-hidden="true" focusable="false">
                 <path d="M0 5.5H54M78 5.5H132" stroke="#c8d2dc" stroke-width="1" fill="none"/>
-                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#b8914d" stroke-width="1"/>
-                <circle cx="66" cy="5.5" r="1.1" fill="#b8914d"/>
+                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#a47a35" stroke-width="1"/>
+                <circle cx="66" cy="5.5" r="1.1" fill="#a47a35"/>
             </svg>
 
             <blockquote class="travel-poem">
@@ -1134,8 +1214,8 @@
 
             <svg class="travel-ornament" viewBox="0 0 132 11" aria-hidden="true" focusable="false">
                 <path d="M0 5.5H54M78 5.5H132" stroke="#c8d2dc" stroke-width="1" fill="none"/>
-                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#b8914d" stroke-width="1"/>
-                <circle cx="66" cy="5.5" r="1.1" fill="#b8914d"/>
+                <path d="M66 1.5L70 5.5L66 9.5L62 5.5Z" fill="none" stroke="#a47a35" stroke-width="1"/>
+                <circle cx="66" cy="5.5" r="1.1" fill="#a47a35"/>
             </svg>
 
             <p class="travel-coda">Research is also re-search for myself: returning to the familiar, and finding both it and ourselves anew.</p>
@@ -1189,6 +1269,22 @@
                 btn.classList.remove('flex');
             }
         });
+
+        // --- Nav scroll-spy: underline the section currently in view ---
+        (function () {
+            if (!('IntersectionObserver' in window)) return;
+            var links = document.querySelectorAll('header nav .nav-link[href^="#"]');
+            var map = {};
+            links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (!e.isIntersecting || !map[e.target.id]) return;
+                    links.forEach(function (a) { a.classList.remove('is-active'); });
+                    map[e.target.id].classList.add('is-active');
+                });
+            }, { rootMargin: '-30% 0px -60% 0px' });
+            document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+        })();
     </script>
 </body>
 </html>
