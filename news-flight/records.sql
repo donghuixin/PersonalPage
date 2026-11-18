@@ -39,13 +39,13 @@ alter table public.nf_records enable row level security;
 drop policy if exists "records are public" on public.nf_records;
 create policy "records are public" on public.nf_records
   for select to anon, authenticated using (not hidden);
+revoke all on public.nf_records from anon, authenticated;
 grant select (name, ms, created_at) on public.nf_records to anon, authenticated;
-revoke insert, update, delete, truncate on public.nf_records from anon, authenticated;
 revoke all on public.nf_runs from anon, authenticated;
 
 -- The visitor's IP, as forwarded by Supabase's API gateway (used only to throttle abuse).
 create or replace function public.nf_client_ip() returns text
-language sql stable as $$
+language sql stable set search_path = '' as $$
   select nullif(btrim(split_part(coalesce(current_setting('request.headers', true)::json ->> 'x-forwarded-for', ''), ',', 1)), '')
 $$;
 

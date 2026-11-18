@@ -5,5 +5,5 @@
 // Both are meant to be public. The database (records.sql) only lets this key read the board
 // and call the three record functions — it cannot change or delete anything.
 // While these are empty the game still works; the board just shows the default record.
-export const SUPABASE_URL = '';
-export const SUPABASE_KEY = '';
+export const SUPABASE_URL = 'https://xqaffoipvlbfivylcbiu.supabase.co';
+export const SUPABASE_KEY = 'sb_publishable_66Pm7cpIz6UHWZ-OHizZhQ__fNROQ_s';
