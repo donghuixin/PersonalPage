@@ -1,6 +1,7 @@
 // News Flight — fly a broom low over a flower meadow; every balloon carries one item of news.
 // Loaded only after the visitor presses PLAY. Visual ideas after Petalwake (MIT, Jacob Miller).
 import * as THREE from '../vendor/three/three.module.min.js';
+import { records, recordsEnabled, ORIGINAL_RECORD, formatTime } from './records.js';
 import { groundH, makeSky, makeClouds, makeCliffs, makeGround, makeGrass, makeFlowers, Petals, SUN_DIR, PALETTE } from './world.js';
 
 const BALLOON_COLORS = ['#ff6f61', '#f2b84b', '#5cc8a8', '#5aa9e6', '#a78bfa', '#f472b6', '#fb923c', '#2dd4bf', '#ef5350', '#6d83e8'];
@@ -352,6 +353,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
   // ---------- input ----------
   const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space'];
   const onKey = (e) => {
+    if (e.target && e.target.tagName === 'INPUT') return;
     if (e.type === 'keydown' && e.code === 'Escape') {
       if (document.fullscreenElement) return;        // the browser leaves full screen first
       e.preventDefault(); exit(); return;
@@ -430,6 +432,18 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
   };
   const ro = new ResizeObserver(resize); ro.observe(root); resize();
 
+  // ---------- records: each flight is timed by the server from start to the last balloon ----------
+  let run = null;
+  const startRun = () => {
+    run = { idP: recordsEnabled ? records.start().catch(() => null) : Promise.resolve(null), local: 0, ms: null, completeP: null, saved: null };
+  };
+  const completeRun = () => {
+    const r = run;
+    r.completeP = r.idP
+      .then((id) => (id ? records.complete(id).then((ms) => { r.ms = ms; r.id = id; return ms; }) : null))
+      .catch(() => null);
+  };
+
   // ---------- news card ----------
   let cardTimer = 0;
   const showCard = (b) => {
@@ -443,25 +457,117 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     cardTimer = 7;
   };
 
+  const TROPHY = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M7 4h10v3a5 5 0 0 1-10 0V4zM5 5H3v1.5A3.5 3.5 0 0 0 6.5 10M19 5h2v1.5A3.5 3.5 0 0 1 17.5 10M12 12v4M8.5 20h7M9.5 16h5v4h-5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>';
   const showDone = () => {
     st.finished = true;
     card.classList.remove('is-in'); card.hidden = true; cardTimer = 0;
-    const items = news.map((n, i) => `<li><span class="nf-done-date" style="--c:${BALLOON_COLORS[i % BALLOON_COLORS.length]}">${n.date}</span><span>${n.html}</span></li>`).join('');
-    done.innerHTML = `<div class="nf-done-card"><p class="nf-done-kicker">All ${total} balloons caught</p><h3>That’s all the news — thanks for flying by.</h3><ol>${items}</ol>
-      <div class="nf-done-actions"><button type="button" class="nf-done-again">Fly again</button><button type="button" class="nf-done-back">Back to the list</button></div></div>`;
-    done.querySelectorAll('a').forEach((a) => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+    renderSummary();
     done.hidden = false;
     requestAnimationFrame(() => done.classList.add('is-in'));
-    done.querySelector('.nf-done-again').addEventListener('click', reset);
-    done.querySelector('.nf-done-back').addEventListener('click', () => exit());
     done.querySelector('.nf-done-again').focus({ preventScroll: true });
   };
+
+  function renderSummary() {
+    const items = news.map((n, i) => `<li><span class="nf-done-date" style="--c:${BALLOON_COLORS[i % BALLOON_COLORS.length]}">${n.date}</span><span>${n.html}</span></li>`).join('');
+    done.innerHTML = `<div class="nf-done-card"><p class="nf-done-kicker">All ${total} balloons caught <span class="nf-done-time"></span></p><h3>That’s all the news — thanks for flying by.</h3><ol>${items}</ol>
+      <div class="nf-done-actions"><button type="button" class="nf-rec-open">${TROPHY}Type Your Records</button><span class="nf-done-right"><button type="button" class="nf-done-again">Fly again</button><button type="button" class="nf-done-back">Back to the list</button></span></div></div>`;
+    done.querySelectorAll('a').forEach((a) => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+    const timeEl = done.querySelector('.nf-done-time');
+    const r = run;
+    timeEl.textContent = '· ' + formatTime((r.ms ?? r.local * 1000));
+    if (r.completeP) r.completeP.then((ms) => { if (ms != null && timeEl.isConnected) timeEl.textContent = '· ' + formatTime(ms); });
+    done.querySelector('.nf-done-again').addEventListener('click', reset);
+    done.querySelector('.nf-done-back').addEventListener('click', () => exit());
+    done.querySelector('.nf-rec-open').addEventListener('click', openRecords);
+  }
+
+  function openRecords() {
+    const r = run;
+    done.innerHTML = `<div class="nf-done-card nf-rec">
+      <div class="nf-rec-head"><button type="button" class="nf-rec-back" aria-label="Back to the summary"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div><p class="nf-done-kicker">${TROPHY} Records</p><h3>Fastest flights through the news</h3></div></div>
+      <form class="nf-rec-form" novalidate>
+        <div class="nf-rec-you"><span>Your flight</span><b class="nf-rec-you-time">…</b></div>
+        <div class="nf-rec-row"><input type="text" name="player" maxlength="24" placeholder="Type your name" autocomplete="nickname" spellcheck="false" aria-label="Your name for the records board"><button type="submit">Save</button></div>
+        <p class="nf-rec-msg">Leave it blank if you’d rather not be on the board — nothing is recorded without a name.</p>
+      </form>
+      <ol class="nf-rec-list" aria-label="Records board"><li class="nf-rec-note">Loading the board…</li></ol>
+    </div>`;
+    const $$ = (q) => done.querySelector(q);
+    const form = $$('.nf-rec-form'), input = $$('input'), saveBtn = $$('.nf-rec-row button'), msg = $$('.nf-rec-msg'), youTime = $$('.nf-rec-you-time'), list = $$('.nf-rec-list');
+    $$('.nf-rec-back').addEventListener('click', () => { renderSummary(); done.querySelector('.nf-rec-open').focus({ preventScroll: true }); });
+    try { input.value = localStorage.getItem('nf-name') || ''; } catch (e) { /* storage blocked */ }
+
+    const lock = (text, cls) => { input.disabled = true; saveBtn.disabled = true; msg.textContent = text; msg.className = 'nf-rec-msg' + (cls ? ' ' + cls : ''); };
+    const showSaved = () => { input.value = r.saved.name; lock(`Saved — you’re #${r.saved.rank} on the board.`, 'is-ok'); saveBtn.textContent = 'Saved'; };
+
+    const renderList = (rows, totalRows, failed) => {
+      list.textContent = '';
+      const entries = rows.map((x, i) => ({ name: x.name, ms: x.ms, rank: i + 1 }));
+      const mine = r.saved;
+      if (mine && !entries.some((x) => x.rank === mine.rank && x.ms === mine.ms)) entries.push({ gap: true }, { name: mine.name, ms: mine.ms, rank: mine.rank });
+      if (totalRows > entries.filter((x) => !x.gap).length && !(mine && mine.rank === totalRows)) entries.push({ gap: true });
+      entries.push({ name: ORIGINAL_RECORD.name, label: ORIGINAL_RECORD.label, rank: totalRows + 1, original: true });
+      for (const x of entries) {
+        const li = document.createElement('li');
+        if (x.gap) { li.className = 'nf-rec-gap'; li.textContent = '⋯'; list.appendChild(li); continue; }
+        if (x.original) li.classList.add('is-original');
+        if (mine && x.rank === mine.rank && x.ms === mine.ms && x.name === mine.name) li.classList.add('is-you');
+        const rank = document.createElement('span'); rank.className = 'nf-rec-rank'; rank.textContent = x.rank;
+        const name = document.createElement('span'); name.className = 'nf-rec-name'; name.textContent = x.name;
+        if (x.original) { const tag = document.createElement('small'); tag.textContent = 'the original flight'; name.appendChild(tag); }
+        const time = document.createElement('span'); time.className = 'nf-rec-time'; time.textContent = x.label || formatTime(x.ms);
+        li.append(rank, name, time);
+        list.appendChild(li);
+      }
+      if (failed && recordsEnabled) {
+        const li = document.createElement('li'); li.className = 'nf-rec-note';
+        li.textContent = 'Couldn’t load the other flights just now.';
+        list.insertBefore(li, list.firstChild);
+      }
+    };
+    const loadList = () => (recordsEnabled ? records.top(10) : Promise.reject(new Error('off')))
+      .then(({ rows, total: t }) => renderList(rows, t, false))
+      .catch(() => renderList([], 0, true));
+
+    youTime.textContent = formatTime(r.ms ?? r.local * 1000);
+    if (r.saved) showSaved();
+    else if (!recordsEnabled) lock('The shared records board isn’t switched on yet, so this flight can’t be saved.');
+    else {
+      saveBtn.disabled = true;
+      Promise.resolve(r.completeP).then((ms) => {
+        if (!done.contains(form)) return;
+        if (ms == null) { lock('Couldn’t reach the records board just now, so this flight can’t be saved.'); return; }
+        youTime.textContent = formatTime(ms);
+        saveBtn.disabled = false;
+      });
+    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (r.saved || saveBtn.disabled) return;
+      const player = input.value.trim();
+      if (!player) { msg.textContent = 'Type a name to save — or just go back, and nothing is recorded.'; msg.className = 'nf-rec-msg is-warn'; input.focus(); return; }
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      records.save(r.id, player).then((res) => {
+        r.saved = res;
+        try { localStorage.setItem('nf-name', res.name); } catch (err) { /* storage blocked */ }
+        showSaved(); loadList();
+      }).catch((err) => {
+        saveBtn.disabled = false; saveBtn.textContent = 'Save';
+        msg.textContent = err.server ? err.message : 'Couldn’t reach the records board — please try again.';
+        msg.className = 'nf-rec-msg is-warn';
+      });
+    });
+    loadList();
+    if (!input.disabled) setTimeout(() => input.focus({ preventScroll: true }), 50);
+  }
 
   function reset() {
     st.got = 0; st.finished = false; gotEl.textContent = '0';
     for (const b of balloons) { b.popped = false; b.group.visible = true; b.group.scale.setScalar(1); }
     st.pos.set(0, groundH(0, 30) + 3.2, 30); st.yaw = 0; st.pitch = 0; st.speed = 14;
     done.classList.remove('is-in'); done.hidden = true; card.hidden = true;
+    startRun();
     root.focus({ preventScroll: true });
   }
 
@@ -486,7 +592,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     rings.push({ s: ring, t: 0 });
     if (!reducedMotion) st.slowmo = 0.45;
     showCard(b);
-    if (st.got === total) setTimeout(() => { if (!disposed) showDone(); }, 1600);
+    if (st.got === total) { completeRun(); setTimeout(() => { if (!disposed) showDone(); }, 1600); }
   };
 
   // ---------- loop ----------
@@ -510,6 +616,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     if (st.slowmo > 0) { st.slowmo -= dt; st.timeScale = damp(st.timeScale, 0.35, 18, dt); }
     else st.timeScale = damp(st.timeScale, 1, 5, dt);
     const realDt = dt;
+    if (playing && run) run.local += realDt;
     if (!st.focused && !st.finished) dt = 0;      // paused: freeze the world, keep drawing it
     dt *= st.timeScale;
     st.t += dt;
@@ -675,6 +782,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
   setTimeout(() => {
     loading.classList.add('is-out');
     setTimeout(() => loading.remove(), 600);
+    startRun();
     root.focus({ preventScroll: true });
   }, 250);
 
