@@ -534,6 +534,67 @@
         .talk-item-dot.secondary { background-color: #cfd3da; border-color: var(--paper); }
         .main-content .border-gray-200\/50 { border-color: var(--line) !important; }
 
+        /* --- News: frosted corner with a PLAY button (the game loads only when pressed) --- */
+        .news-stage { position: relative; border-radius: 1rem; transition: height .55s cubic-bezier(.3, .8, .3, 1); }
+        .news-stage .news-list:hover { transform: none; }
+        .news-veil {
+            display: none; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; overflow: hidden;
+            -webkit-backdrop-filter: blur(9px) saturate(160%); backdrop-filter: blur(9px) saturate(160%);
+            background:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                radial-gradient(55% 70% at 96% 104%, rgba(244, 160, 200, .68), rgba(244, 160, 200, 0) 70%),
+                radial-gradient(45% 60% at 70% 115%, rgba(150, 205, 110, .35), rgba(150, 205, 110, 0) 70%),
+                linear-gradient(200deg, rgba(160, 200, 240, .62) 0%, rgba(214, 232, 246, .58) 40%, rgba(255, 246, 250, .7) 100%);
+            -webkit-mask-image: radial-gradient(var(--veil-w, 520px) var(--veil-h, 300px) at 100% 100%, #000 0%, #000 38%, rgba(0, 0, 0, .7) 55%, transparent 100%);
+                    mask-image: radial-gradient(var(--veil-w, 520px) var(--veil-h, 300px) at 100% 100%, #000 0%, #000 38%, rgba(0, 0, 0, .7) 55%, transparent 100%);
+        }
+        .news-stage.has-play .news-veil { display: block; }
+        @media (max-width: 640px) { .news-stage { --veil-w: 260px; --veil-h: 120px; } .news-stage.has-play .news-list { padding-bottom: 4.6rem; } .news-play { right: .75rem; bottom: .75rem; } }
+        .news-veil i {
+            position: absolute; width: 9px; height: 13px; opacity: 0;
+            border-radius: 60% 60% 50% 50% / 70% 70% 40% 40%;
+            background: linear-gradient(180deg, #fbd0e2, #f08cbc);
+            animation: newsPetal 10s linear infinite;
+        }
+        .news-veil i:nth-child(1) { right: 6%;  bottom: 8%;  animation-delay: 0s; }
+        .news-veil i:nth-child(2) { right: 18%; bottom: 4%;  animation-delay: 2.1s; transform: scale(.8); }
+        .news-veil i:nth-child(3) { right: 11%; bottom: 20%; animation-delay: 4.3s; }
+        .news-veil i:nth-child(4) { right: 26%; bottom: 12%; animation-delay: 6.2s; }
+        .news-veil i:nth-child(5) { right: 4%;  bottom: 30%; animation-delay: 8s; }
+        @keyframes newsPetal {
+            0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+            12% { opacity: .8; }
+            70% { opacity: .55; }
+            100% { opacity: 0; transform: translate(-90px, -60px) rotate(260deg); }
+        }
+        .news-play {
+            position: absolute; right: 1rem; bottom: 1rem; z-index: 3;
+            display: inline-flex; align-items: center; gap: .65rem; padding: .45rem 1.05rem .45rem .45rem;
+            border-radius: 999px; cursor: pointer; color: var(--navy);
+            background: rgba(255, 255, 255, .55);
+            -webkit-backdrop-filter: blur(14px) saturate(170%); backdrop-filter: blur(14px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, .85);
+            box-shadow: 0 12px 28px -14px rgba(29, 42, 70, .55), inset 0 1px 0 rgba(255, 255, 255, .9);
+            transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
+        }
+        .news-play[hidden] { display: none; }
+        .news-play:hover { transform: translateY(-2px); background: rgba(255, 255, 255, .85); box-shadow: 0 16px 32px -14px rgba(29, 42, 70, .6), inset 0 1px 0 #fff; }
+        .news-play-icon {
+            width: 2.1rem; height: 2.1rem; flex: 0 0 2.1rem; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 999px; background: var(--navy); color: #fff; padding-left: 2px;
+            animation: newsPulse 2.6s ease-out infinite;
+        }
+        @keyframes newsPulse {
+            0% { box-shadow: 0 0 0 0 rgba(164, 122, 53, .5); }
+            70%, 100% { box-shadow: 0 0 0 12px rgba(164, 122, 53, 0); }
+        }
+        .news-play-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; text-align: left; }
+        .news-play-text b { font-size: .8rem; font-weight: 700; letter-spacing: .18em; }
+        .news-play-text small { font-size: .68rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+        .news-stage.is-playing { overflow: hidden; }
+        .news-stage.is-playing .news-list { visibility: hidden; }
+        .news-stage.is-playing .news-veil, .news-stage.is-playing .news-play { display: none; }
+
         /* --- Back to top --- */
         #backToTop { background: var(--navy) !important; box-shadow: 0 10px 24px -10px rgba(29,42,70,.55) !important; width: 2.75rem; height: 2.75rem; }
         #backToTop:hover { background: #131d33 !important; transform: translateY(-2px) !important; }
@@ -742,7 +803,8 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200/50 flex items-center">
                 <i class="fa fa-bullhorn mr-3 text-[#a47a35]"></i>News
             </h2>
-            <div class="glass-card rounded-2xl p-6 space-y-3">
+            <div class="news-stage" id="news-stage">
+            <div class="glass-card rounded-2xl p-6 space-y-3 news-list">
                     <div class="flex items-start">
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2026.08</span>
                     <span class="text-gray-700 text-sm"> 🎉🎉 AmbientRider is accepted by <strong>ACM MobiCom 2026</strong>. See you in Austin, TX!</span>
@@ -783,6 +845,12 @@
                     <span class="text-gray-500 font-mono text-sm w-24 pt-0.5 shrink-0">2023.06</span>
                     <span class="text-gray-700 text-sm">🎉🎉 GPSMirror is accepted by <strong>MobiCom 2023</strong>.</span>
                 </div>
+            </div>
+            <div class="news-veil" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+            <button type="button" class="news-play" id="news-play" hidden aria-label="Play: fly through the news">
+                <span class="news-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>
+                <span class="news-play-text"><b>PLAY</b><small>Fly through the news</small></span>
+            </button>
             </div>
         </section>
 
@@ -1269,6 +1337,47 @@
                 btn.classList.remove('flex');
             }
         });
+
+        // --- News Flight: the list stays as is; PLAY loads a small three.js game in its place ---
+        (function () {
+            var stage = document.getElementById('news-stage');
+            var btn = document.getElementById('news-play');
+            if (!stage || !btn) return;
+            var ok = false;
+            try { ok = !!document.createElement('canvas').getContext('webgl2'); } catch (e) { ok = false; }
+            if (!ok || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            btn.hidden = false;
+            stage.classList.add('has-play');
+            var game = null, busy = false;
+            function targetHeight() { return Math.round(Math.max(420, Math.min(window.innerHeight * 0.7, 740))); }
+            function close() {
+                game = null;
+                var list = stage.querySelector('.news-list');
+                stage.style.height = list.offsetHeight + 'px';
+                stage.classList.remove('is-playing');
+                setTimeout(function () { if (!game) stage.style.height = ''; }, 600);
+                btn.focus({ preventScroll: true });
+            }
+            btn.addEventListener('click', function () {
+                if (busy || game) return;
+                busy = true;
+                var news = Array.prototype.map.call(stage.querySelectorAll('.news-list > div'), function (row) {
+                    return { date: row.children[0].textContent.trim(), html: row.children[1].innerHTML.replace(/^\s*(?:🎉\s*)+/, '').trim() };
+                });
+                stage.style.height = stage.offsetHeight + 'px';
+                stage.classList.add('is-playing');
+                requestAnimationFrame(function () { stage.style.height = targetHeight() + 'px'; });
+                var top = stage.getBoundingClientRect().top + window.scrollY - 84;
+                if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: 'smooth' });
+                import('./news-flight/news-flight.js')
+                    .then(function (m) { return m.start(stage, { news: news, onExit: close }); })
+                    .then(function (g) { game = g; busy = false; })
+                    .catch(function (err) { console.error('News Flight failed to start', err); var r = stage.querySelector('.nf-root'); if (r) r.remove(); busy = false; close(); });
+            });
+            window.addEventListener('resize', function () {
+                if (game && !document.fullscreenElement) stage.style.height = targetHeight() + 'px';
+            });
+        })();
 
         // --- Nav scroll-spy: underline the section currently in view ---
         (function () {
