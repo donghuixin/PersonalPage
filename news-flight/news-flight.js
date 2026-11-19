@@ -2,10 +2,12 @@
 // Loaded only after the visitor presses PLAY. Visual ideas after Petalwake (MIT, Jacob Miller).
 import * as THREE from '../vendor/three/three.module.min.js';
 import { records, recordsEnabled, ORIGINAL_RECORD, formatTime } from './records.js';
-import { groundH, makeSky, makeClouds, makeCliffs, makeGround, makeGrass, makeFlowers, Petals, SUN_DIR, PALETTE } from './world.js';
+import { makeTerrain, makeLighting, makeSky, makeClouds, makeCliffs, makeGround, makeWater, makeGrass, makeFlowers, Petals } from './world.js';
 
 const BALLOON_COLORS = ['#ff6f61', '#f2b84b', '#5cc8a8', '#5aa9e6', '#a78bfa', '#f472b6', '#fb923c', '#2dd4bf', '#ef5350', '#6d83e8'];
 const PETAL_COLORS = ['#f48fb8', '#f7a8c9', '#fbcfe1', '#ffffff', '#ec6fa6', '#fde7f0'].map((h) => new THREE.Color(h));
+const SPRAY_COLORS = ['#ffffff', '#eefbff', '#d4f1f6', '#ffffff'].map((h) => new THREE.Color(h));
+const SAND_COLORS = ['#e8d5a6', '#d9c08d', '#f1e3bf'].map((h) => new THREE.Color(h));
 
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 const clamp = THREE.MathUtils.clamp;
@@ -182,7 +184,7 @@ function makePost() {
 // ------------------------------------------------------------------------------------------
 function makeAudio() {
   const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return { pop() {}, wind() {}, setMuted() {}, close() {} };
+  if (!AC) return { pop() {}, wind() {}, surf() {}, setMuted() {}, close() {} };
   const ctx = new AC();
   const master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
   const noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
@@ -191,6 +193,10 @@ function makeAudio() {
   const windF = ctx.createBiquadFilter(); windF.type = 'bandpass'; windF.frequency.value = 500; windF.Q.value = 0.6;
   const windG = ctx.createGain(); windG.gain.value = 0;
   windSrc.connect(windF).connect(windG).connect(master); windSrc.start();
+  const surfSrc = ctx.createBufferSource(); surfSrc.buffer = noise; surfSrc.loop = true; surfSrc.playbackRate.value = 0.7;
+  const surfF = ctx.createBiquadFilter(); surfF.type = 'lowpass'; surfF.frequency.value = 520;
+  const surfG = ctx.createGain(); surfG.gain.value = 0;
+  surfSrc.connect(surfF).connect(surfG).connect(master); surfSrc.start();
   let muted = false;
   return {
     pop() {
@@ -213,7 +219,8 @@ function makeAudio() {
       windG.gain.setTargetAtTime(muted ? 0 : 0.012 + 0.05 * k * k, ctx.currentTime, 0.2);
       windF.frequency.setTargetAtTime(380 + 700 * k, ctx.currentTime, 0.2);
     },
-    setMuted(m) { muted = m; if (m) windG.gain.setTargetAtTime(0, ctx.currentTime, 0.05); },
+    surf(k) { surfG.gain.setTargetAtTime(muted ? 0 : 0.09 * k, ctx.currentTime, 0.35); },
+    setMuted(m) { muted = m; if (m) { windG.gain.setTargetAtTime(0, ctx.currentTime, 0.05); surfG.gain.setTargetAtTime(0, ctx.currentTime, 0.05); } },
     suspend() { ctx.suspend(); }, resume() { ctx.resume(); },
     close() { try { ctx.close(); } catch (e) { /* already closed */ } },
   };
@@ -225,6 +232,10 @@ function makeAudio() {
 export async function start(stage, { news, onExit, reducedMotion = false }) {
   await ensureCss();
   const touch = matchMedia('(pointer: coarse)').matches;
+  const qs = new URLSearchParams(location.search);
+  const pick = (name, options) => (options.includes(qs.get(name)) ? qs.get(name) : options[(Math.random() * options.length) | 0]);
+  const T = makeTerrain(pick('nfscene', ['meadow', 'bay']));
+  const L = makeLighting(pick('nflight', ['noon', 'golden']));
   const lowPower = touch || (navigator.hardwareConcurrency || 8) <= 4;
 
   // ---------- DOM ----------
@@ -252,7 +263,8 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     <div class="nf-card" aria-live="polite" hidden><div class="nf-card-date"></div><div class="nf-card-text"></div><div class="nf-card-count"></div></div>
   `);
   root.appendChild(hud);
-  const loading = el('div', 'nf-loading', '<div class="nf-loading-inner"><div class="nf-loader"><i></i><i></i><i></i></div><p>Growing the meadow…</p></div>');
+  const loading = el('div', 'nf-loading', `<div class="nf-loading-inner"><div class="nf-loader"><i></i><i></i><i></i></div><p>${T.kind === 'bay' ? 'Rolling in the tide…' : 'Growing the meadow…'}</p></div>`);
+  loading.classList.add(`is-${L.kind}`);
   root.appendChild(loading);
   const pause = el('button', 'nf-pause', '<span>Paused</span><small>Click to keep flying</small>');
   pause.type = 'button'; pause.hidden = true;
@@ -271,37 +283,53 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
   // ---------- renderer ----------
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = L.exposure;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   let pixelRatio = Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 1.6);
   renderer.setPixelRatio(pixelRatio);
   const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 });
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(PALETTE.horizon.clone(), 150, 1600);
+  scene.fog = new THREE.Fog(L.fog.clone(), 150, 1600);
   const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 5000);
 
-  scene.add(new THREE.HemisphereLight('#cfe3ff', '#6e9a45', 1.35));
-  const sun = new THREE.DirectionalLight('#fff1d8', 2.4);
-  sun.position.copy(SUN_DIR).multiplyScalar(100);
+  scene.add(new THREE.HemisphereLight(L.hemiSky, L.hemiGround, L.hemiIntensity));
+  const sun = new THREE.DirectionalLight(L.sunLight, L.sunIntensity);
+  sun.position.copy(L.sunDir).multiplyScalar(100);
   scene.add(sun); scene.add(sun.target);
 
-  const sky = makeSky(); scene.add(sky);
-  const clouds = makeClouds(); scene.add(clouds);
+  const sky = makeSky(L); scene.add(sky);
+  const clouds = makeClouds(L); scene.add(clouds);
   const cliffs = makeCliffs(); scene.add(cliffs);
-  const ground = makeGround(); scene.add(ground);
+  const ground = makeGround(T, L); scene.add(ground);
+  const water = T.water ? makeWater(T, L) : null;
+  if (water) scene.add(water);
   const GR = lowPower ? 64 : 84, FR = lowPower ? 104 : 140;
-  const grass = makeGrass(lowPower ? 9000 : 22000, GR); scene.add(grass);
-  const flowers = makeFlowers(lowPower ? 18000 : 44000, FR); scene.add(flowers);
+  const grass = makeGrass(lowPower ? 9000 : 22000, GR, T, L); scene.add(grass);
+  const flowers = makeFlowers(lowPower ? 18000 : 44000, FR, T, L); scene.add(flowers);
   const NR = lowPower ? 40 : 50;
-  const flowersNear = makeFlowers(lowPower ? 12000 : 30000, NR, 314, 0.9); scene.add(flowersNear);
-  const petals = new Petals(lowPower ? 900 : 1600); scene.add(petals.mesh);
+  const flowersNear = makeFlowers(lowPower ? 12000 : 30000, NR, T, L, 314, 0.9); scene.add(flowersNear);
+  const petals = new Petals(lowPower ? 900 : 1600, T); scene.add(petals.mesh);
 
   const rider = makeRider(); scene.add(rider.group);
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.4), new THREE.MeshBasicMaterial({ map: blobTexture(), transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; scene.add(shadow);
 
   // ---------- balloons ----------
+  // Meadow: a meandering line ahead of the start. Bay: over the meadow and dunes, along the beach,
+  // out across the shallows and round the three sandbars.
+  function coursePoint(i) {
+    if (T.kind !== 'bay') return [Math.sin(i * 1.35 + 0.4) * 34 + (i % 2 ? 9 : -9), -(60 + i * 52)];
+    const land = [[8, 75], [-26, 40], [18, 7]];               // [x, metres inland of the waterline]
+    if (i < land.length) { const [x, dz] = land[i]; return [x, T.shoreZ(x) + dz]; }
+    const [a, b, c] = T.islets;
+    const sea = [[-12, T.shoreZ(-12) - 32], [34, T.shoreZ(34) - 66], [-28, T.shoreZ(-28) - 104],
+      [a[0], a[1]], [-8, -346], [b[0], b[1]], [c[0], c[1]]];
+    const k = i - land.length;
+    if (k < sea.length) return sea[k];
+    const [lx, lz] = sea[sea.length - 1];                      // more news than spots: carry on east
+    return [lx + (k - sea.length + 1) * 38, lz + 30 * Math.sin(k)];
+  }
   const ringTex = ringTexture();
   const BR = 1.55, BH = 2.05;
   const bGeo = balloonGeometry(BR, BH);
@@ -320,12 +348,9 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: tagTexture(n.date, hex), fog: false, depthWrite: false }));
     tag.scale.set(1.9, 0.83, 1); tag.position.set(0, -BH / 2 - 0.12 - 3.6 - 0.4, 0);
     group.add(tag);
-    // a meandering course ahead of the start, at mixed heights
-    const along = 60 + i * 52;
-    const side = Math.sin(i * 1.35 + 0.4) * 34 + (i % 2 ? 9 : -9);
-    const x = side, z = -along;
+    const [x, z] = coursePoint(i);
     const alt = 6 + ((i * 5) % 4) * 3.2;
-    const y = groundH(x, z) + alt;
+    const y = T.surface(x, z) + alt;
     group.position.set(x, y, z);
     scene.add(group);
     return { i, n, color, group, body, string, strPts, strGeo, tag, home: new THREE.Vector3(x, y, z), popped: false, phase: i * 1.7 };
@@ -338,7 +363,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
 
   // ---------- state ----------
   const st = {
-    pos: new THREE.Vector3(0, groundH(0, 30) + 3.2, 30), yaw: 0, pitch: 0, roll: 0, speed: 14,
+    pos: new THREE.Vector3(0, T.surface(0, 30) + 3.2, 30), yaw: 0, pitch: 0, roll: 0, speed: 14,
     vel: new THREE.Vector3(), t: 0, timeScale: 1, slowmo: 0, got: 0,
     focused: true, visible: true, running: true, finished: false,
   };
@@ -565,7 +590,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
   function reset() {
     st.got = 0; st.finished = false; gotEl.textContent = '0';
     for (const b of balloons) { b.popped = false; b.group.visible = true; b.group.scale.setScalar(1); }
-    st.pos.set(0, groundH(0, 30) + 3.2, 30); st.yaw = 0; st.pitch = 0; st.speed = 14;
+    st.pos.set(0, T.surface(0, 30) + 3.2, 30); st.yaw = 0; st.pitch = 0; st.speed = 14;
     done.classList.remove('is-in'); done.hidden = true; card.hidden = true;
     startRun();
     root.focus({ preventScroll: true });
@@ -643,7 +668,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     const target = boost ? 33 : brake ? 8 : 19;
     st.speed = damp(st.speed, playing ? target : 10, boost ? 1.6 : 1.2, dt);
     st.yaw += turn * (1.25 + 0.35 * (1 - st.speed / 33)) * dt;
-    const alt = st.pos.y - groundH(st.pos.x, st.pos.z);
+    const alt = st.pos.y - T.surface(st.pos.x, st.pos.z);
     let pitchT = climb * 0.55;
     if (climb === 0) pitchT = clamp((4.0 - alt) * 0.05, -0.18, 0.18) * 0.6;   // gently hold a low cruise
     st.pitch = damp(st.pitch, pitchT, 3, dt);
@@ -658,7 +683,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     fwd.set(-Math.sin(st.yaw) * Math.cos(st.pitch), Math.sin(st.pitch), -Math.cos(st.yaw) * Math.cos(st.pitch));
     st.vel.copy(fwd).multiplyScalar(st.speed);
     st.pos.addScaledVector(st.vel, dt);
-    const gh = groundH(st.pos.x, st.pos.z);
+    const gh = T.surface(st.pos.x, st.pos.z);
     if (st.pos.y < gh + 0.85) { st.pos.y = gh + 0.85; if (st.pitch < 0) st.pitch *= 0.5; }
     if (st.pos.y > gh + 48) st.pos.y = damp(st.pos.y, gh + 48, 4, dt);
     const speedK = clamp((st.speed - 8) / 25, 0, 1);
@@ -673,7 +698,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     shadow.rotation.z = -st.yaw;
     shadow.material.opacity = clamp(1 - (alt - 0.8) / 10, 0, 1);
 
-    // --- petals torn up by the wake
+    // --- what the broom throws up: petals over the meadow, sand off the beach, spray over the sea
     const lowK = 1 - THREE.MathUtils.smoothstep(alt, 1.2, 7.5);
     petalAcc += dt * lowK * (30 + 320 * speedK * speedK);
     tmp2.set(Math.cos(st.yaw), 0, -Math.sin(st.yaw));         // right vector
@@ -683,8 +708,23 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
       const back = 0.5 + Math.random() * 3.5;
       const x = st.pos.x - fwd.x * back + tmp2.x * side * 2.6;
       const z = st.pos.z - fwd.z * back + tmp2.z * side * 2.6;
-      const y = groundH(x, z) + 0.35 + Math.random() * 0.3;
+      const h = T.h(x, z);
       const out = 2 + Math.random() * 4.5 * (0.4 + speedK);
+      if (h < -0.03) {
+        for (let n = 0; n < 2; n++) {
+          petals.spawn(x + (Math.random() - 0.5), 0.15, z + (Math.random() - 0.5),
+            tmp2.x * side * out * 0.8 + st.vel.x * 0.22, 2 + Math.random() * 4.5 * (0.5 + speedK), tmp2.z * side * out * 0.8 + st.vel.z * 0.22,
+            SPRAY_COLORS[(Math.random() * SPRAY_COLORS.length) | 0], 0.05 + Math.random() * 0.09, 0.8 + Math.random() * 0.8, 2);
+        }
+        continue;
+      }
+      if (T.flowers(x, z) < 0.5) {
+        if (Math.random() < 0.55) continue;
+        petals.spawn(x, h + 0.1, z, tmp2.x * side * out * 0.5 + st.vel.x * 0.15, 1 + Math.random() * 2.2, tmp2.z * side * out * 0.5 + st.vel.z * 0.15,
+          SAND_COLORS[(Math.random() * SAND_COLORS.length) | 0], 0.035 + Math.random() * 0.05, 0.6 + Math.random() * 0.6, 2);
+        continue;
+      }
+      const y = h + 0.35 + Math.random() * 0.3;
       petals.spawn(x, y, z,
         tmp2.x * side * out + st.vel.x * 0.28, 1.5 + Math.random() * 3.5 * (0.5 + speedK), tmp2.z * side * out + st.vel.z * 0.28,
         PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0], 0.11 + Math.random() * 0.13, 2.5 + Math.random() * 3.2, 0);
@@ -695,7 +735,8 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
       ambAcc -= 1;
       const a = Math.random() * 6.283, r = 6 + Math.random() * 30;
       const x = st.pos.x + Math.cos(a) * r + fwd.x * 15, z = st.pos.z + Math.sin(a) * r + fwd.z * 15;
-      petals.spawn(x, groundH(x, z) + 1 + Math.random() * 7, z, wind.x, 0.3, wind.z, PETAL_COLORS[(Math.random() * 6) | 0], 0.12 + Math.random() * 0.1, 4 + Math.random() * 3, 0);
+      if (T.flowers(x, z) < 0.5) continue;
+      petals.spawn(x, T.surface(x, z) + 1 + Math.random() * 7, z, wind.x, 0.3, wind.z, PETAL_COLORS[(Math.random() * 6) | 0], 0.12 + Math.random() * 0.1, 4 + Math.random() * 3, 0);
     }
     petals.update(dt, st.t, wind, st.pos, st.vel);
 
@@ -732,7 +773,7 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     // --- camera: chase from behind and a little above
     const back = 6.2 + speedK * 1.4, up = 2.0 + speedK * 0.3;
     tmp.set(st.pos.x + Math.sin(st.yaw) * back, st.pos.y + up - st.pitch * 2.0, st.pos.z + Math.cos(st.yaw) * back);
-    const cg = groundH(tmp.x, tmp.z) + 0.9;
+    const cg = T.surface(tmp.x, tmp.z) + 0.9;
     if (tmp.y < cg) tmp.y = cg;
     camPos.x = damp(camPos.x, tmp.x, 6, dt); camPos.y = damp(camPos.y, tmp.y, 5, dt); camPos.z = damp(camPos.z, tmp.z, 6, dt);
     camera.position.copy(camPos);
@@ -746,8 +787,9 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     clouds.userData.update(camera.position, st.t);
     cliffs.position.set(camera.position.x, 0, camera.position.z);
     ground.userData.update(camera.position);
-    sun.position.copy(st.pos).addScaledVector(SUN_DIR, 100); sun.target.position.copy(st.pos);
+    sun.position.copy(st.pos).addScaledVector(L.sunDir, 100); sun.target.position.copy(st.pos);
     const wakeW = speedK * 0.85 + 0.15;
+    if (water) water.userData.update(camera.position, st.t, st.pos, wakeW);
     for (const [m, R] of [[grass, GR], [flowers, FR], [flowersNear, NR]]) {
       const u = m.material.uniforms;
       u.uTime.value = st.t;
@@ -766,6 +808,10 @@ export async function start(stage, { news, onExit, reducedMotion = false }) {
     } else compass.hidden = true;
     if (cardTimer > 0 && dt > 0) { cardTimer -= realDt; if (cardTimer <= 0) card.classList.remove('is-in'); }
     audio.wind(playing ? speedK : 0);
+    if (T.water) {
+      const near = 1 - THREE.MathUtils.smoothstep(Math.abs(T.coast(st.pos.x, st.pos.z)), 10, 170);
+      audio.surf(playing ? (0.15 + 0.85 * near) * (0.55 + 0.45 * Math.sin(st.t * 0.55)) : 0);
+    }
     if (st.t > 10 && !hint.classList.contains('is-out')) hint.classList.add('is-out');
 
     // --- render

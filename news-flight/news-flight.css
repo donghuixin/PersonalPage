@@ -227,3 +227,4 @@
   .nf-done-right { width: 100%; margin-left: 0; }
   .nf-done-right button { flex: 1; }
 }
+.nf-loading.is-golden { background: linear-gradient(180deg, #4f6aa6 0%, #c9a6b4 45%, #f6c497 100%); }
